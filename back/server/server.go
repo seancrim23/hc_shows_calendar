@@ -34,13 +34,14 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService) (*HCShowCal
 	r.HandleFunc("/show/{id}", h.updateShow).Methods("PUT")    //token
 	r.HandleFunc("/show/{id}", h.deleteShow).Methods("DELETE") //token
 
-	r.HandleFunc("/user", h.createUser).Methods("POST") //token
+	r.HandleFunc("/user", h.Auth)
+	r.HandleFunc("/user", h.createUser).Methods("PUT") //token
 	r.HandleFunc("/user/{id}", h.getUser).Methods("GET")
 	r.HandleFunc("/user/{id}", h.updateUser).Methods("PUT")    // token
 	r.HandleFunc("/user/{id}", h.deleteUser).Methods("DELETE") //token
 
 	handler := cors.New(cors.Options{
-		AllowedOrigins: []string{os.Getenv("ALLOWED_ORIGINS")},
+		AllowedOrigins: []string{os.Getenv(utils.ALLOWED_ORIGINS)},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 		Debug:          false,
@@ -73,7 +74,10 @@ func (h *HCShowCalendarServer) getShows(w http.ResponseWriter, r *http.Request) 
 	var code int
 	var err error
 
-	//service
+	//needs to extract any filters from the url and pass them to the function
+	//grab from url and modify to map?
+	//create type of showFilters map[string]string?
+
 	shows, err := h.service.GetShows()
 	if err != nil {
 		code = 400
@@ -181,6 +185,32 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 	}
 
 	utils.RespondWithJSON(w, code, u)
+}
+
+func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) {
+	var response string
+	var code int
+	var err error
+	var u models.User
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		util.RespondWithError(w, code, err.Error())
+		return
+	}
+	err = json.Unmarshal(reqBody, &u)
+	if err != nil {
+		code = 400
+		util.RespondWithError(w, code, err.Error())
+		return
+	}
+	t, err = h.service.AuthUser(u)
+	if err != nil {
+		code = 400
+		util.RespondWithError(w, code, err.Error())
+		return
+	}
+	util.RespondWithJSON(w, code, map[string]string{"token": t})
 }
 
 func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {

@@ -15,6 +15,7 @@ import (
 	firebase "firebase.google.com/go"
 	"github.com/fatih/structs"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/api/iterator"
 )
 
@@ -27,11 +28,11 @@ type FirestoreHCShowCalendarService struct {
 func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(), error) {
 	ctx := context.Background()
 
-	if value := os.Getenv("FIRESTORE_EMULATOR_HOST"); value != "" {
+	if value := os.Getenv(utils.FIRESTORE_EMULATOR_HOST); value != "" {
 		fmt.Println("using firestore emulator: " + value)
 	}
 
-	conf := &firebase.Config{ProjectID: os.Getenv("GCP_PROJECT_ID")}
+	conf := &firebase.Config{ProjectID: os.Getenv(utils.GCP_PROJECT_ID)}
 	app, err := firebase.NewApp(ctx, conf)
 	if err != nil {
 		fmt.Println("error making new firebase app: ", err)
@@ -180,18 +181,25 @@ func (f *FirestoreHCShowCalendarService) GetUser(id string) (*models.User, error
 	return &u, nil
 }
 
+// TODO GENERATE A TOKEN FOR A USER
 func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.User, error) {
-	newUserId := uuid.New()
-	user.Id = newUserId.String()
 	ctx := context.Background()
-	_, err := f.database.Collection(util.USER_COLLECTION).Doc(newUserId.String()).Set(ctx, user)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Pass), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Println("error creating user")
+		fmt.Println("error generating password hash")
 		fmt.Println(err)
-		return nil, errors.New("error creating user")
+		return err
 	}
-	b, _ := json.Marshal(user)
-	fmt.Println("successful user creation: " + string(b))
+	//not sure if this is a weird way to do it
+	//but will guarantee no possible plain text pass in db
+	u := models.User{Username: user.Username, Hash: string(hashedPassword), Email: user.Email}
+	newUserId := uuid.New()
+	_, err = f.database.Collection(util.USER_COLLECTION).Doc(newUserId.String()).Set(ctx, u)
+	if err != nil {
+		fmt.Println("some sort of error building the add query from firestore")
+		fmt.Println(err)
+		return err
+	}
 	return &user, nil
 }
 
@@ -241,4 +249,46 @@ func (f *FirestoreHCShowCalendarService) DeleteUser(id string) error {
 	}
 	fmt.Println("successful delete of id: " + id)
 	return nil
+}
+
+func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, error) {
+	ctx := context.Background()
+	var a models.Auth
+	iter := f.database.Collection(util.USER_COLLECTION).Where("username", "==", user.Username).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			fmt.Println(err)
+			return "", err
+		}
+		err = doc.DataTo(&a)
+		if err != nil {
+			fmt.Println(err)
+			return "", err
+		}
+	}
+	if a.Username == "" {
+		fmt.Println("user does not exist")
+		return "", errors.New("failed login")
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(a.Hash), []byte(user.Pass))
+	if err != nil {
+		//probably dont want this to tell too much
+		fmt.Println("password does not match")
+		fmt.Println(err)
+		return "", errors.New("failed login")
+	}
+
+	t, err := utils.GenerateToken(a.Username)
+	if err != nil {
+		fmt.Println("error generating access token")
+		fmt.Println(err)
+		return "", err
+	}
+
+	return t, nil
 }
