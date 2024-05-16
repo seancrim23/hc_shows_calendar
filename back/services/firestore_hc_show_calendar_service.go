@@ -23,6 +23,7 @@ import (
 // tbd any other variables that may be needed for the service
 type FirestoreHCShowCalendarService struct {
 	database *firestore.Client
+	ctx      context.Context
 }
 
 func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(), error) {
@@ -48,18 +49,19 @@ func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(
 		database.Close()
 	}
 
-	return &FirestoreHCShowCalendarService{database: database}, closeFunc, nil
+	return &FirestoreHCShowCalendarService{database: database, ctx: ctx}, closeFunc, nil
 }
 
-// TODO get shows will only filter by STATE and CITY
-// currently only pull a weeks worth of shows
-// in the future expand to pull however many
-// need to make sure query runs well and also need to add pagination...
-func (f *FirestoreHCShowCalendarService) GetShows() (*[]models.Show, error) {
+// TODO pagination at some point?
+func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]string) (*[]models.Show, error) {
 	var shows []models.Show
 	var s models.Show
-	ctx := context.Background()
-	iter := f.database.Collection(utils.SHOW_COLLECTION).Documents(ctx)
+	query := f.database.Collection(utils.SHOW_COLLECTION)
+	//TODO FIX
+	/*for k, v := range showQueryFilters {
+		query = query.Where(k, "==", v)
+	}*/
+	iter := query.Documents(f.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -82,8 +84,7 @@ func (f *FirestoreHCShowCalendarService) GetShows() (*[]models.Show, error) {
 
 func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error) {
 	fmt.Println("getting show with id " + id)
-	ctx := context.Background()
-	dsnap, err := util.DB.Collection(util.SHOW_COLLECTION).Doc(id).Get(ctx)
+	dsnap, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(id).Get(f.ctx)
 	if err != nil {
 		fmt.Println("error getting show")
 		fmt.Println(err)
@@ -102,8 +103,7 @@ func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error
 func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show) (*models.Show, error) {
 	newShowId := uuid.New()
 	show.Id = newShowId.String()
-	ctx := context.Background()
-	_, err := f.database.Collection(util.SHOW_COLLECTION).Doc(newShowId.String()).Set(ctx, show)
+	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(newShowId.String()).Set(f.ctx, show)
 	if err != nil {
 		fmt.Println("error creating show")
 		fmt.Println(err)
@@ -116,9 +116,8 @@ func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show) (*models.S
 
 func (f *FirestoreHCShowCalendarService) UpdateShow(id string, show models.Show) (*models.Show, error) {
 	fmt.Println("updating values for show " + id)
-	ctx := context.Background()
 	showFirestoreUpdateData := buildShowFirestoreUpdateData(show)
-	_, err := f.database.Collection(util.SHOW_COLLECTION).Doc(id).Update(ctx, showFirestoreUpdateData)
+	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(id).Update(f.ctx, showFirestoreUpdateData)
 	if err != nil {
 		fmt.Println("error updating show")
 		fmt.Println(err)
@@ -151,8 +150,7 @@ func buildShowFirestoreUpdateData(show models.Show) []firestore.Update {
 
 func (f *FirestoreHCShowCalendarService) DeleteShow(id string) error {
 	fmt.Println("deleting show with id... " + id)
-	ctx := context.Background()
-	_, err := f.database.Collection(util.SHOW_COLLECTION).Doc(id).Delete(ctx)
+	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(id).Delete(f.ctx)
 	if err != nil {
 		fmt.Println("error deleting show")
 		fmt.Println(err)
@@ -164,8 +162,7 @@ func (f *FirestoreHCShowCalendarService) DeleteShow(id string) error {
 
 func (f *FirestoreHCShowCalendarService) GetUser(id string) (*models.User, error) {
 	fmt.Println("getting user with id " + id)
-	ctx := context.Background()
-	dsnap, err := f.database.Collection(util.USER_COLLECTION).Doc(id).Get(ctx)
+	dsnap, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Get(f.ctx)
 	if err != nil {
 		fmt.Println("error getting user")
 		fmt.Println(err)
@@ -183,31 +180,29 @@ func (f *FirestoreHCShowCalendarService) GetUser(id string) (*models.User, error
 
 // TODO GENERATE A TOKEN FOR A USER
 func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.User, error) {
-	ctx := context.Background()
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Pass), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println("error generating password hash")
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 	//not sure if this is a weird way to do it
 	//but will guarantee no possible plain text pass in db
 	u := models.User{Username: user.Username, Hash: string(hashedPassword), Email: user.Email}
 	newUserId := uuid.New()
-	_, err = f.database.Collection(util.USER_COLLECTION).Doc(newUserId.String()).Set(ctx, u)
+	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(newUserId.String()).Set(f.ctx, u)
 	if err != nil {
 		fmt.Println("some sort of error building the add query from firestore")
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 	return &user, nil
 }
 
 func (f *FirestoreHCShowCalendarService) UpdateUser(id string, user models.User) (*models.User, error) {
 	fmt.Println("updating values for user " + id)
-	ctx := context.Background()
 	userFirestoreUpdateData := buildUserFirestoreUpdateData(user)
-	_, err := f.database.Collection(util.USER_COLLECTION).Doc(id).Update(ctx, userFirestoreUpdateData)
+	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Update(f.ctx, userFirestoreUpdateData)
 	if err != nil {
 		fmt.Println("error updating user")
 		fmt.Println(err)
@@ -240,8 +235,7 @@ func buildUserFirestoreUpdateData(user models.User) []firestore.Update {
 
 func (f *FirestoreHCShowCalendarService) DeleteUser(id string) error {
 	fmt.Println("deleting user with id... " + id)
-	ctx := context.Background()
-	_, err := f.database.Collection(util.USER_COLLECTION).Doc(id).Delete(ctx)
+	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Delete(f.ctx)
 	if err != nil {
 		fmt.Println("error deleting user")
 		fmt.Println(err)
@@ -252,9 +246,8 @@ func (f *FirestoreHCShowCalendarService) DeleteUser(id string) error {
 }
 
 func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, error) {
-	ctx := context.Background()
-	var a models.Auth
-	iter := f.database.Collection(util.USER_COLLECTION).Where("username", "==", user.Username).Documents(ctx)
+	var u models.User
+	iter := f.database.Collection(utils.USER_COLLECTION).Where("username", "==", user.Username).Documents(f.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -264,18 +257,18 @@ func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, err
 			fmt.Println(err)
 			return "", err
 		}
-		err = doc.DataTo(&a)
+		err = doc.DataTo(&u)
 		if err != nil {
 			fmt.Println(err)
 			return "", err
 		}
 	}
-	if a.Username == "" {
+	if u.Username == "" {
 		fmt.Println("user does not exist")
 		return "", errors.New("failed login")
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(a.Hash), []byte(user.Pass))
+	err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(user.Pass))
 	if err != nil {
 		//probably dont want this to tell too much
 		fmt.Println("password does not match")
@@ -283,7 +276,7 @@ func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, err
 		return "", errors.New("failed login")
 	}
 
-	t, err := utils.GenerateToken(a.Username)
+	t, err := utils.GenerateToken(u.Username)
 	if err != nil {
 		fmt.Println("error generating access token")
 		fmt.Println(err)

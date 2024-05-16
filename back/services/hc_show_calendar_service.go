@@ -8,10 +8,8 @@ import "hc_shows_backend/models"
 // this is created as an interface so we can implement different db connections
 // and their respective functions as needed
 type HCShowCalendarService interface {
-	//GetShows will probably be a big func at some point
-	//need to be able to pass filters and handle lots of queries
-	//pagination needed for get shows too
-	GetShows() (*[]models.Show, error)
+	//TODO add pagination (if needed) which should contain a member to hold the query filters
+	GetShows(map[string]string) (*[]models.Show, error)
 	GetShow(string) (*models.Show, error)
 	CreateShow(models.Show) (*models.Show, error)
 	UpdateShow(string, models.Show) (*models.Show, error)
@@ -19,7 +17,7 @@ type HCShowCalendarService interface {
 
 	GetUser(string) (*models.User, error)
 	CreateUser(models.User) (*models.User, error)
-	UpdateUser(string, models.User) (models.User, error)
+	UpdateUser(string, models.User) (*models.User, error)
 	DeleteUser(string) error
 
 	AuthUser(models.User) (string, error)

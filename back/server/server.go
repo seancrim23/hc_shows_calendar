@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"hc_shows_backend/models"
 	"hc_shows_backend/services"
@@ -34,7 +35,7 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService) (*HCShowCal
 	r.HandleFunc("/show/{id}", h.updateShow).Methods("PUT")    //token
 	r.HandleFunc("/show/{id}", h.deleteShow).Methods("DELETE") //token
 
-	r.HandleFunc("/user", h.Auth)
+	r.HandleFunc("/user", h.authUser)
 	r.HandleFunc("/user", h.createUser).Methods("PUT") //token
 	r.HandleFunc("/user/{id}", h.getUser).Methods("GET")
 	r.HandleFunc("/user/{id}", h.updateUser).Methods("PUT")    // token
@@ -71,14 +72,20 @@ func (h *HCShowCalendarServer) getShow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HCShowCalendarServer) getShows(w http.ResponseWriter, r *http.Request) {
-	var code int
+	var code = 200
 	var err error
+	showQueryFilters := make(map[string]string)
+	params := r.URL.Query()
 
-	//needs to extract any filters from the url and pass them to the function
-	//grab from url and modify to map?
-	//create type of showFilters map[string]string?
+	if len(params) > 0 {
+		for k, v := range params {
+			if _, ok := utils.ValidShowQueryFilters[strings.ToLower(k)]; ok {
+				showQueryFilters[k] = v[0]
+			}
+		}
+	}
 
-	shows, err := h.service.GetShows()
+	shows, err := h.service.GetShows(showQueryFilters)
 	if err != nil {
 		code = 400
 		utils.RespondWithError(w, code, err.Error())
@@ -89,6 +96,7 @@ func (h *HCShowCalendarServer) getShows(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	var code int
 	var err error
 	var show models.Show
@@ -115,6 +123,7 @@ func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request
 }
 
 func (h *HCShowCalendarServer) updateShow(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	var code int
 	var err error
 	var show models.Show
@@ -162,6 +171,7 @@ func (h *HCShowCalendarServer) deleteShow(w http.ResponseWriter, r *http.Request
 }
 
 func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	var code int
 	var err error
 	var user models.User
@@ -188,29 +198,29 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 }
 
 func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) {
-	var response string
+	defer r.Body.Close()
 	var code int
 	var err error
 	var u models.User
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		util.RespondWithError(w, code, err.Error())
+		utils.RespondWithError(w, code, err.Error())
 		return
 	}
 	err = json.Unmarshal(reqBody, &u)
 	if err != nil {
 		code = 400
-		util.RespondWithError(w, code, err.Error())
+		utils.RespondWithError(w, code, err.Error())
 		return
 	}
-	t, err = h.service.AuthUser(u)
+	t, err := h.service.AuthUser(u)
 	if err != nil {
 		code = 400
-		util.RespondWithError(w, code, err.Error())
+		utils.RespondWithError(w, code, err.Error())
 		return
 	}
-	util.RespondWithJSON(w, code, map[string]string{"token": t})
+	utils.RespondWithJSON(w, code, map[string]string{"token": t})
 }
 
 func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
@@ -232,6 +242,7 @@ func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HCShowCalendarServer) updateUser(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	var code int
 	var err error
 	var user models.User
