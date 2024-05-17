@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"hc_shows_backend/models"
@@ -15,10 +16,11 @@ import (
 )
 
 type StubHCShowCalendarService struct {
-	GetShowsFunc func(showQueryFilters map[string]string) (*[]models.Show, error)
-	GetShowFunc  func(id string) (*models.Show, error)
-	shows        []models.Show
-	users        []models.User
+	GetShowsFunc   func(showQueryFilters map[string]string) (*[]models.Show, error)
+	GetShowFunc    func(id string) (*models.Show, error)
+	CreateShowFunc func(show models.Show) (*models.Show, error)
+	shows          []models.Show
+	users          []models.User
 }
 
 // set up the mock service with a bunch of users and shows?
@@ -146,9 +148,7 @@ func TestGetShow(t *testing.T) {
 
 		assertStatus(t, res.Code, http.StatusOK)
 
-		var showResponse models.Show
-		resBody, _ := io.ReadAll(res.Body)
-		_ = json.Unmarshal(resBody, &showResponse)
+		showResponse := responseToShow(res.Body)
 
 		if showResponse.Id != expectedShow.Id {
 			t.Fatalf("expected id of %q in response but got %q", expectedShow.Id, showResponse.Id)
@@ -158,10 +158,87 @@ func TestGetShow(t *testing.T) {
 			t.Errorf("the show %+v was not what was expected %+v", showResponse, expectedShow)
 		}
 	})
+
+	//TODO build out better error handling for service and update testing and handlers accordingly
+	t.Run("returns 400 bad request if no user id passed in", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+
+		service.GetShowFunc = func(id string) (*models.Show, error) {
+			return nil, errors.New("bad request")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodGet, "/show", nil)
+		res := httptest.NewRecorder()
+
+		server.getShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 404 not found if no show found for id", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+
+		service.GetShowFunc = func(id string) (*models.Show, error) {
+			return nil, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodGet, "/show", nil)
+		res := httptest.NewRecorder()
+
+		server.getShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusNotFound)
+	})
 }
 
 func (s *StubHCShowCalendarService) CreateShow(show models.Show) (*models.Show, error) {
-	return nil, nil
+	s.shows = append(s.shows, show)
+	return s.CreateShowFunc(show)
+}
+
+func TestCreateShow(t *testing.T) {
+	t.Run("can create shows with valid show data", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedShow := models.Show{
+			Id:   "coolshow123",
+			City: "Baltimore",
+		}
+
+		service.CreateShowFunc = func(show models.Show) (*models.Show, error) {
+			return &expectedShow, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPost, "/show", showToJSON(expectedShow))
+		res := httptest.NewRecorder()
+
+		server.createShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusCreated)
+
+		showResponse := responseToShow(res.Body)
+
+		if !reflect.DeepEqual(showResponse, expectedShow) {
+			t.Errorf("the show create api call response %+v was not what was expected %+v", showResponse, expectedShow)
+		}
+
+		if len(service.shows) != 1 {
+			t.Fatalf("expected 1 show added but got %d", len(service.shows))
+		}
+
+		if !reflect.DeepEqual(service.shows[0], expectedShow) {
+			t.Errorf("the show created %+v was not what was expected %+v", service.shows[0], expectedShow)
+		}
+
+	})
 }
 
 func (s *StubHCShowCalendarService) UpdateShow(id string, show models.Show) (*models.Show, error) {
@@ -197,4 +274,16 @@ func assertStatus(t testing.TB, got, want int) {
 	if got != want {
 		t.Errorf("did not get correct status, got %d, want %d", got, want)
 	}
+}
+
+func showToJSON(show models.Show) io.Reader {
+	b, _ := json.Marshal(show)
+	return bytes.NewReader(b)
+}
+
+func responseToShow(responseBody *bytes.Buffer) models.Show {
+	var showResponse models.Show
+	resBody, _ := io.ReadAll(responseBody)
+	_ = json.Unmarshal(resBody, &showResponse)
+	return showResponse
 }

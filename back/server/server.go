@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -71,6 +72,11 @@ func (h *HCShowCalendarServer) getShow(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
+	if show == nil {
+		code = 404
+		utils.RespondWithError(w, code, errors.New("cannot find show").Error())
+		return
+	}
 
 	utils.RespondWithJSON(w, code, show)
 }
@@ -102,7 +108,7 @@ func (h *HCShowCalendarServer) getShows(w http.ResponseWriter, r *http.Request) 
 
 func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var code int
+	var code = 201
 	var err error
 	var show models.Show
 
