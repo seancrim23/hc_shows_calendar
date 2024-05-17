@@ -1,15 +1,22 @@
 package server
 
 import (
+	"encoding/json"
+	"errors"
 	"hc_shows_backend/models"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type StubHCShowCalendarService struct {
 	GetShowsFunc func(showQueryFilters map[string]string) (*[]models.Show, error)
+	GetShowFunc  func(id string) (*models.Show, error)
 	shows        []models.Show
 	users        []models.User
 }
@@ -82,17 +89,75 @@ func TestGetShows(t *testing.T) {
 
 		server, _ := NewHCShowCalendarServer(service)
 
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequest(http.MethodGet, "/show", nil)
 		res := httptest.NewRecorder()
 
 		server.getShows(res, req)
 
 		assertStatus(t, res.Code, http.StatusOK)
+
+		var showsResponse []models.Show
+		resBody, _ := io.ReadAll(res.Body)
+		_ = json.Unmarshal(resBody, &showsResponse)
+
+		if len(showsResponse) != 3 {
+			t.Fatalf("expected 3 shows in response but got %d", len(showsResponse))
+		}
+	})
+
+	//TODO build out better error handling for service and update testing and handlers accordingly
+	t.Run("returns 400 bad request if error is thrown", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+
+		service.GetShowsFunc = func(showQueryFilters map[string]string) (*[]models.Show, error) {
+			return nil, errors.New("make me more meaningful please")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodGet, "/show", nil)
+		res := httptest.NewRecorder()
+
+		server.getShows(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
 	})
 }
 
 func (s *StubHCShowCalendarService) GetShow(id string) (*models.Show, error) {
-	return nil, nil
+	return s.GetShowFunc(id)
+}
+
+func TestGetShow(t *testing.T) {
+	t.Run("gets correct show when id passed in", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		expectedShow := service.shows[0]
+		service.GetShowFunc = func(id string) (*models.Show, error) {
+			return &expectedShow, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodGet, "/show/"+expectedShow.Id, nil)
+		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
+		res := httptest.NewRecorder()
+
+		server.getShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusOK)
+
+		var showResponse models.Show
+		resBody, _ := io.ReadAll(res.Body)
+		_ = json.Unmarshal(resBody, &showResponse)
+
+		if showResponse.Id != expectedShow.Id {
+			t.Fatalf("expected id of %q in response but got %q", expectedShow.Id, showResponse.Id)
+		}
+
+		if !reflect.DeepEqual(showResponse, expectedShow) {
+			t.Errorf("the show %+v was not what was expected %+v", showResponse, expectedShow)
+		}
+	})
 }
 
 func (s *StubHCShowCalendarService) CreateShow(show models.Show) (*models.Show, error) {

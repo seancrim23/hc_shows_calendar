@@ -56,12 +56,20 @@ func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(
 func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]string) (*[]models.Show, error) {
 	var shows []models.Show
 	var s models.Show
-	query := f.database.Collection(utils.SHOW_COLLECTION)
-	//TODO FIX
-	/*for k, v := range showQueryFilters {
-		query = query.Where(k, "==", v)
-	}*/
-	iter := query.Documents(f.ctx)
+	var q firestore.Query
+	//TODO make sure this works?
+	//Maybe will have to expand query filters to an object at some point...
+	collection := f.database.Collection(utils.SHOW_COLLECTION)
+	index := 0
+	for k, v := range showQueryFilters {
+		if index == 0 {
+			q = collection.Where(k, "==", v)
+		} else {
+			q = q.Where(k, "==", v)
+		}
+		index++
+	}
+	iter := q.Documents(f.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {

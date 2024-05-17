@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -15,6 +14,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
+
+//TODO FIGURE OUT SOME SOLUTION FOR ERROR HANDLING
+//MAYBE CODE OUT BASIC ERROR HANDLING THEN SEE IF I CAN
+//COMBINE CODE
+//WHAT ERROR CODES FIT FOR WHAT ENDPOINTS
 
 type HCShowCalendarServer struct {
 	service services.HCShowCalendarService
@@ -54,7 +58,7 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService) (*HCShowCal
 }
 
 func (h *HCShowCalendarServer) getShow(w http.ResponseWriter, r *http.Request) {
-	var code int
+	var code = 200
 	var err error
 
 	showId := mux.Vars(r)["id"]
@@ -86,6 +90,7 @@ func (h *HCShowCalendarServer) getShows(w http.ResponseWriter, r *http.Request) 
 	}
 
 	shows, err := h.service.GetShows(showQueryFilters)
+	//TODO build out something to parse errors and deliver error codes
 	if err != nil {
 		code = 400
 		utils.RespondWithError(w, code, err.Error())
@@ -101,7 +106,7 @@ func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request
 	var err error
 	var show models.Show
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.RespondWithError(w, code, err.Error())
 		return
@@ -128,7 +133,7 @@ func (h *HCShowCalendarServer) updateShow(w http.ResponseWriter, r *http.Request
 	var err error
 	var show models.Show
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.RespondWithError(w, code, err.Error())
 		return
@@ -176,7 +181,7 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 	var err error
 	var user models.User
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.RespondWithError(w, code, err.Error())
 		return
@@ -203,7 +208,7 @@ func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) 
 	var err error
 	var u models.User
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.RespondWithError(w, code, err.Error())
 		return
@@ -247,7 +252,7 @@ func (h *HCShowCalendarServer) updateUser(w http.ResponseWriter, r *http.Request
 	var err error
 	var user models.User
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.RespondWithError(w, code, err.Error())
 		return
