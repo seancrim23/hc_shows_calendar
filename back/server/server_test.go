@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -19,6 +20,8 @@ type StubHCShowCalendarService struct {
 	GetShowsFunc   func(showQueryFilters map[string]string) (*[]models.Show, error)
 	GetShowFunc    func(id string) (*models.Show, error)
 	CreateShowFunc func(show models.Show) (*models.Show, error)
+	UpdateShowFunc func(id string, show models.Show) (*models.Show, error)
+	DeleteShowFunc func(id string) error
 	shows          []models.Show
 	users          []models.User
 }
@@ -108,7 +111,7 @@ func TestGetShows(t *testing.T) {
 	})
 
 	//TODO build out better error handling for service and update testing and handlers accordingly
-	t.Run("returns 400 bad request if error is thrown", func(t *testing.T) {
+	t.Run("returns 500 internal server error if error is thrown", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
 
 		service.GetShowsFunc = func(showQueryFilters map[string]string) (*[]models.Show, error) {
@@ -122,7 +125,7 @@ func TestGetShows(t *testing.T) {
 
 		server.getShows(res, req)
 
-		assertStatus(t, res.Code, http.StatusBadRequest)
+		assertStatus(t, res.Code, http.StatusInternalServerError)
 	})
 }
 
@@ -159,7 +162,6 @@ func TestGetShow(t *testing.T) {
 		}
 	})
 
-	//TODO build out better error handling for service and update testing and handlers accordingly
 	t.Run("returns 400 bad request if no user id passed in", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
 
@@ -179,6 +181,7 @@ func TestGetShow(t *testing.T) {
 
 	t.Run("returns 404 not found if no show found for id", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
+		expectedShow := service.shows[0]
 
 		service.GetShowFunc = func(id string) (*models.Show, error) {
 			return nil, nil
@@ -187,11 +190,31 @@ func TestGetShow(t *testing.T) {
 		server, _ := NewHCShowCalendarServer(service)
 
 		req := httptest.NewRequest(http.MethodGet, "/show", nil)
+		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
 		res := httptest.NewRecorder()
 
 		server.getShow(res, req)
 
 		assertStatus(t, res.Code, http.StatusNotFound)
+	})
+
+	t.Run("returns 500 internal server error if the service fails", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		expectedShow := service.shows[0]
+
+		service.GetShowFunc = func(id string) (*models.Show, error) {
+			return nil, errors.New("error getting user")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodGet, "/show", nil)
+		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
+		res := httptest.NewRecorder()
+
+		server.getShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
 	})
 }
 
@@ -239,14 +262,173 @@ func TestCreateShow(t *testing.T) {
 		}
 
 	})
+
+	t.Run("returns 400 bad request if body is not valid show JSON", func(t *testing.T) {
+		server, _ := NewHCShowCalendarServer(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/show", strings.NewReader("this will not work"))
+		res := httptest.NewRecorder()
+
+		server.createShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 500 internal server error if service fails", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedShow := models.Show{
+			Id:   "coolshow123",
+			City: "Baltimore",
+		}
+
+		service.CreateShowFunc = func(show models.Show) (*models.Show, error) {
+			return nil, errors.New("couldnt create new show")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+		req := httptest.NewRequest(http.MethodPost, "/show", showToJSON(expectedShow))
+		res := httptest.NewRecorder()
+
+		server.createShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
+	})
+
 }
 
 func (s *StubHCShowCalendarService) UpdateShow(id string, show models.Show) (*models.Show, error) {
-	return nil, nil
+	for i := range s.shows {
+		if s.shows[i].Id == id {
+			s.shows[i] = show
+		}
+	}
+	return s.UpdateShowFunc(id, show)
+}
+
+func TestUpdateShow(t *testing.T) {
+	t.Run("can update shows with valid show data", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		testUser1 := models.User{
+			Username: "coolpromoter123",
+			Email:    "coolpromoter123@hotmail.com",
+			Hash:     "reallycoolpassword45",
+		}
+		expectedShow := models.Show{
+			Id:       "abc123",
+			Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
+			Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+			State:    "MD",
+			City:     "Baltimore",
+			Venue:    "Jon's Jumping Jellybeans",
+			Address:  "456 Hotdog Way",
+			Promoter: testUser1,
+		}
+
+		service.UpdateShowFunc = func(id string, show models.Show) (*models.Show, error) {
+			return &expectedShow, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPut, "/show", showToJSON(expectedShow))
+		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
+		res := httptest.NewRecorder()
+
+		server.updateShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusOK)
+
+		showResponse := responseToShow(res.Body)
+
+		if !reflect.DeepEqual(showResponse, expectedShow) {
+			t.Errorf("the show update api call response %+v was not what was expected %+v", showResponse, expectedShow)
+		}
+
+		currentServiceShow := service.getShowById(expectedShow.Id)
+		//venue and address being updated for this case
+		//deep equal doesnt work even though values are the same, maybe look into this
+		if currentServiceShow.Venue != expectedShow.Venue {
+			t.Errorf("the show update store value %+v was not what was expected %+v", currentServiceShow, expectedShow)
+		}
+		if currentServiceShow.Address != expectedShow.Address {
+			t.Errorf("the show update store value %+v was not what was expected %+v", currentServiceShow, expectedShow)
+		}
+	})
+
+	t.Run("returns 400 bad request if body is not valid show JSON", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPut, "/show", strings.NewReader("this is not a valid json"))
+		res := httptest.NewRecorder()
+
+		server.updateShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 400 bad request if body is valid json but there's no id passed in", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedShow := models.Show{
+			Id:   "coolshow123",
+			City: "Baltimore",
+		}
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPut, "/show", showToJSON(expectedShow))
+		res := httptest.NewRecorder()
+
+		server.updateShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 500 internal server error if service fails", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedShow := models.Show{
+			Id:   "coolshow123",
+			City: "Baltimore",
+		}
+
+		service.UpdateShowFunc = func(id string, show models.Show) (*models.Show, error) {
+			return nil, errors.New("couldnt update show")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+		req := httptest.NewRequest(http.MethodPut, "/show", showToJSON(expectedShow))
+		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
+		res := httptest.NewRecorder()
+
+		server.updateShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
+	})
 }
 
 func (s *StubHCShowCalendarService) DeleteShow(id string) error {
-	return nil
+	for i, v := range s.shows {
+		if v.Id == id {
+			s.shows = removeElementFromArray(s.shows, i)
+		}
+	}
+	return s.DeleteShowFunc(id)
+}
+
+func TestDeleteShow(t *testing.T) {
+
 }
 
 func (s *StubHCShowCalendarService) GetUser(id string) (*models.User, error) {
@@ -286,4 +468,19 @@ func responseToShow(responseBody *bytes.Buffer) models.Show {
 	resBody, _ := io.ReadAll(responseBody)
 	_ = json.Unmarshal(resBody, &showResponse)
 	return showResponse
+}
+
+func (s *StubHCShowCalendarService) getShowById(id string) *models.Show {
+	for _, v := range s.shows {
+		if v.Id == id {
+			return &v
+		}
+	}
+	return nil
+}
+
+func removeElementFromArray(shows []models.Show, index int) []models.Show {
+	newShows := make([]models.Show, 0)
+	newShows = append(newShows, shows[:index]...)
+	return append(newShows, shows[index+1:]...)
 }

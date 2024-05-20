@@ -117,8 +117,6 @@ func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show) (*models.S
 		fmt.Println(err)
 		return nil, errors.New("error creating show")
 	}
-	b, _ := json.Marshal(show)
-	fmt.Println("successful show creation: " + string(b))
 	return &show, nil
 }
 
