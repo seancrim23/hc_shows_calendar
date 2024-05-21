@@ -862,7 +862,6 @@ func TestDeleteUser(t *testing.T) {
 	})
 }
 
-// TODO do this
 func (s *StubHCShowCalendarService) AuthUser(user models.User) (string, error) {
 	return s.AuthUserFunc(user)
 }
