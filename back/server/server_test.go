@@ -32,10 +32,10 @@ type StubHCShowCalendarService struct {
 	UpdateShowFunc func(id string, show models.Show) (*models.Show, error)
 	DeleteShowFunc func(id string) error
 
-	GetUserFunc    func(username string) (*models.User, error)
+	GetUserFunc    func(id string) (*models.User, error)
 	CreateUserFunc func(user models.User) (*models.User, error)
-	UpdateUserFunc func(username string, user models.User) (*models.User, error)
-	DeleteUserFunc func(username string) error
+	UpdateUserFunc func(id string, user models.User) (*models.User, error)
+	DeleteUserFunc func(id string) error
 
 	AuthUserFunc func(user models.User) (string, error)
 
@@ -46,11 +46,13 @@ type StubHCShowCalendarService struct {
 // set up the mock service with a bunch of users and shows?
 func NewStubHCShowCalendarService() *StubHCShowCalendarService {
 	testUser1 := models.User{
+		Id:       "user123",
 		Username: "coolpromoter123",
 		Email:    "coolpromoter123@hotmail.com",
 		Hash:     "reallycoolpassword45",
 	}
 	testUser2 := models.User{
+		Id:       "user456",
 		Username: "promotercool456",
 		Email:    "promotercool456@hotmail.com",
 		Hash:     "anotherreallycoolpassword",
@@ -179,7 +181,7 @@ func TestGetShow(t *testing.T) {
 		}
 	})
 
-	t.Run("returns 400 bad request if no user id passed in", func(t *testing.T) {
+	t.Run("returns 400 bad request if no show id passed in", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
 
 		service.GetShowFunc = func(id string) (*models.Show, error) {
@@ -329,6 +331,7 @@ func TestUpdateShow(t *testing.T) {
 	t.Run("can update shows with valid show data", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
 		testUser1 := models.User{
+			Id:       "user123",
 			Username: "coolpromoter123",
 			Email:    "coolpromoter123@hotmail.com",
 			Hash:     "reallycoolpassword45",
@@ -506,81 +509,90 @@ func TestDeleteShow(t *testing.T) {
 	})
 }
 
-func (s *StubHCShowCalendarService) GetUser(username string) (*models.User, error) {
-	return s.GetUserFunc(username)
+func (s *StubHCShowCalendarService) GetUser(id string) (*models.User, error) {
+	return s.GetUserFunc(id)
 }
 
-// TODO NEED TO REFACTOR USER CODE TO ADD ACTUAL ID
 func TestGetUser(t *testing.T) {
-	t.Run("gets correct user when username passed in", func(t *testing.T) {
+	t.Run("gets correct user when id passed in", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
 		expectedUser := service.users[0]
-		service.GetUserFunc = func(username string) (*models.User, error) {
+		service.GetUserFunc = func(id string) (*models.User, error) {
 			return &expectedUser, nil
 		}
 
 		server, _ := NewHCShowCalendarServer(service)
 
 		req := httptest.NewRequest(http.MethodGet, "/user", nil)
-		req = mux.SetURLVars(req, map[string]string{"id": expectedUser.Username})
+		req = mux.SetURLVars(req, map[string]string{"id": expectedUser.Id})
 		res := httptest.NewRecorder()
 
-		server.getShow(res, req)
+		server.getUser(res, req)
 
 		assertStatus(t, res.Code, http.StatusOK)
+
+		userResponse := responseToUser(res.Body)
+
+		if userResponse.Id != expectedUser.Id {
+			t.Fatalf("expected id of %q in response but got %q", expectedUser.Id, userResponse.Id)
+		}
+
+		if !reflect.DeepEqual(userResponse, expectedUser) {
+			t.Errorf("the show %+v was not what was expected %+v", userResponse, expectedUser)
+		}
 	})
 
 	t.Run("returns 400 bad request if no user id passed in", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
 
-		service.GetShowFunc = func(id string) (*models.Show, error) {
+		service.GetUserFunc = func(id string) (*models.User, error) {
 			return nil, errors.New("bad request")
 		}
 
 		server, _ := NewHCShowCalendarServer(service)
 
-		req := httptest.NewRequest(http.MethodGet, "/show", nil)
+		req := httptest.NewRequest(http.MethodGet, "/user", nil)
 		res := httptest.NewRecorder()
 
-		server.getShow(res, req)
+		server.getUser(res, req)
 
 		assertStatus(t, res.Code, http.StatusBadRequest)
 	})
 
-	t.Run("returns 404 not found if no show found for id", func(t *testing.T) {
+	t.Run("returns 404 not found if no user found for id", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
-		expectedShow := service.shows[0]
+		expectedUser := service.users[0]
 
-		service.GetShowFunc = func(id string) (*models.Show, error) {
+		service.GetUserFunc = func(id string) (*models.User, error) {
 			return nil, nil
 		}
 
 		server, _ := NewHCShowCalendarServer(service)
 
 		req := httptest.NewRequest(http.MethodGet, "/show", nil)
-		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
+		req = mux.SetURLVars(req, map[string]string{"id": expectedUser.Id})
 		res := httptest.NewRecorder()
 
-		server.getShow(res, req)
+		server.getUser(res, req)
 
 		assertStatus(t, res.Code, http.StatusNotFound)
 	})
 
 	t.Run("returns 500 internal server error if the service fails", func(t *testing.T) {
 		service := NewStubHCShowCalendarService()
-		expectedShow := service.shows[0]
+		expectedUser := service.users[0]
 
-		service.GetShowFunc = func(id string) (*models.Show, error) {
+		service.GetUserFunc = func(id string) (*models.User, error) {
 			return nil, errors.New("error getting user")
 		}
 
 		server, _ := NewHCShowCalendarServer(service)
 
-		req := httptest.NewRequest(http.MethodGet, "/show", nil)
-		req = mux.SetURLVars(req, map[string]string{"id": expectedShow.Id})
+		req := httptest.NewRequest(http.MethodGet, "/user", nil)
+		req = mux.SetURLVars(req, map[string]string{"id": expectedUser.Id})
 		res := httptest.NewRecorder()
 
-		server.getShow(res, req)
+		server.getUser(res, req)
 
 		assertStatus(t, res.Code, http.StatusInternalServerError)
 	})
@@ -591,27 +603,330 @@ func (s *StubHCShowCalendarService) CreateUser(user models.User) (*models.User, 
 	return s.CreateUserFunc(user)
 }
 
-func (s *StubHCShowCalendarService) UpdateUser(username string, user models.User) (*models.User, error) {
+func TestCreateUser(t *testing.T) {
+	t.Run("can create user with valid show data", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedUser := models.User{
+			Id:       "cooluser123",
+			Username: "BaltimoreGuy123",
+		}
+
+		service.CreateUserFunc = func(user models.User) (*models.User, error) {
+			return &expectedUser, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPost, "/user", userToJSON(expectedUser))
+		res := httptest.NewRecorder()
+
+		server.createUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusCreated)
+
+		userResponse := responseToUser(res.Body)
+
+		if !reflect.DeepEqual(userResponse, expectedUser) {
+			t.Errorf("the user create api call response %+v was not what was expected %+v", userResponse, expectedUser)
+		}
+
+		if len(service.users) != 1 {
+			t.Fatalf("expected 1 user added but got %d", len(service.users))
+		}
+
+		if !reflect.DeepEqual(service.users[0], expectedUser) {
+			t.Errorf("the user created %+v was not what was expected %+v", service.users[0], expectedUser)
+		}
+
+	})
+
+	t.Run("returns 400 bad request if body is not valid show JSON", func(t *testing.T) {
+		server, _ := NewHCShowCalendarServer(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/user", strings.NewReader("this will not work"))
+		res := httptest.NewRecorder()
+
+		server.createShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 500 internal server error if service fails", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedUser := models.User{
+			Id:       "cooluser123",
+			Username: "BaltimoreGuy123",
+		}
+
+		service.CreateUserFunc = func(show models.User) (*models.User, error) {
+			return nil, errors.New("couldnt create new user")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+		req := httptest.NewRequest(http.MethodPost, "/user", userToJSON(expectedUser))
+		res := httptest.NewRecorder()
+
+		server.createUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
+	})
+
+}
+
+func (s *StubHCShowCalendarService) UpdateUser(id string, user models.User) (*models.User, error) {
 	for i := range s.users {
-		if s.users[i].Username == username {
+		if s.users[i].Id == id {
 			s.users[i] = user
 		}
 	}
-	return s.UpdateUserFunc(username, user)
+	return s.UpdateUserFunc(id, user)
 }
 
-func (s *StubHCShowCalendarService) DeleteUser(username string) error {
+func TestUpdateUser(t *testing.T) {
+	t.Run("can update user with valid user data", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		expectedUser := models.User{
+			Id:       "user123",
+			Username: "awesomepromoter123",
+			Email:    "coolpromoter123@hotmail.com",
+			Hash:     "reallycoolpassword45",
+		}
+
+		service.UpdateUserFunc = func(id string, user models.User) (*models.User, error) {
+			return &expectedUser, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPut, "/user", userToJSON(expectedUser))
+		req = mux.SetURLVars(req, map[string]string{"id": expectedUser.Id})
+		res := httptest.NewRecorder()
+
+		server.updateUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusOK)
+
+		userResponse := responseToUser(res.Body)
+
+		if !reflect.DeepEqual(userResponse, expectedUser) {
+			t.Errorf("the user update api call response %+v was not what was expected %+v", userResponse, expectedUser)
+		}
+
+		currentServiceUser := service.getUserById(expectedUser.Id)
+		//username being updated for this case
+		//deep equal doesnt work even though values are the same, maybe look into this
+		if currentServiceUser.Username != expectedUser.Username {
+			t.Errorf("the show update store value %+v was not what was expected %+v", currentServiceUser.Username, expectedUser.Username)
+		}
+	})
+
+	t.Run("returns 400 bad request if body is not valid show JSON", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPut, "/user", strings.NewReader("this is not a valid json"))
+		res := httptest.NewRecorder()
+
+		server.updateUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 400 bad request if body is valid json but there's no id passed in", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedUser := models.User{
+			Id:       "user123",
+			Username: "awesomepromoter123",
+			Email:    "coolpromoter123@hotmail.com",
+			Hash:     "reallycoolpassword45",
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPut, "/user", userToJSON(expectedUser))
+		res := httptest.NewRecorder()
+
+		server.updateUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 500 internal server error if service fails", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedUser := models.User{
+			Id:       "user123",
+			Username: "awesomepromoter123",
+			Email:    "coolpromoter123@hotmail.com",
+			Hash:     "reallycoolpassword45",
+		}
+
+		service.UpdateUserFunc = func(id string, user models.User) (*models.User, error) {
+			return nil, errors.New("couldnt update user")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+		req := httptest.NewRequest(http.MethodPut, "/user", userToJSON(expectedUser))
+		req = mux.SetURLVars(req, map[string]string{"id": expectedUser.Id})
+		res := httptest.NewRecorder()
+
+		server.updateUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
+	})
+}
+
+func (s *StubHCShowCalendarService) DeleteUser(id string) error {
 	for i, v := range s.users {
-		if v.Username == username {
+		if v.Id == id {
 			s.users = removeUserElementFromArray(s.users, i)
 		}
 	}
-	return s.DeleteUserFunc(username)
+	return s.DeleteUserFunc(id)
+}
+
+func TestDeleteUser(t *testing.T) {
+	t.Run("can delete a user with a valid user id", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		expectedId := "user123"
+
+		service.DeleteUserFunc = func(id string) error {
+			return nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodDelete, "/user", nil)
+		req = mux.SetURLVars(req, map[string]string{"id": expectedId})
+		res := httptest.NewRecorder()
+
+		server.deleteUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusOK)
+
+		if len(service.users) != 1 {
+			t.Fatalf("expected 1 user to be in the store but got %d", len(service.users))
+		}
+	})
+
+	t.Run("returns 400 bad request if no id is passed in", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodDelete, "/user", nil)
+		res := httptest.NewRecorder()
+
+		server.deleteShow(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 500 internal server error if service fails", func(t *testing.T) {
+		service := &StubHCShowCalendarService{
+			shows: []models.Show{},
+			users: []models.User{},
+		}
+		expectedId := "user123"
+
+		service.DeleteUserFunc = func(id string) error {
+			return errors.New("some internal error happened")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+		req := httptest.NewRequest(http.MethodDelete, "/user", nil)
+		req = mux.SetURLVars(req, map[string]string{"id": expectedId})
+		res := httptest.NewRecorder()
+
+		server.deleteUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
+	})
 }
 
 // TODO do this
 func (s *StubHCShowCalendarService) AuthUser(user models.User) (string, error) {
-	return "", nil
+	return s.AuthUserFunc(user)
+}
+
+func TestAuthUser(t *testing.T) {
+	t.Run("gets a token successfully when valid user passed in", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		expectedUser := service.users[0]
+		expectedToken := "goodtoken"
+
+		service.AuthUserFunc = func(user models.User) (string, error) {
+			return expectedToken, nil
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPost, "/auth", userToJSON(expectedUser))
+		res := httptest.NewRecorder()
+
+		server.authUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusOK)
+
+		tokenResponse := responseToMap(res.Body)
+
+		if tokenResponse["token"] != expectedToken {
+			t.Fatalf("expected token of %q in response but got %q", tokenResponse["token"], expectedToken)
+		}
+	})
+
+	t.Run("returns 400 bad request if no user passed in", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+
+		service.AuthUserFunc = func(user models.User) (string, error) {
+			return "", errors.New("bad request")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPost, "/auth", nil)
+		res := httptest.NewRecorder()
+
+		server.authUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusBadRequest)
+	})
+
+	t.Run("returns 500 internal server error if the service fails", func(t *testing.T) {
+		service := NewStubHCShowCalendarService()
+		expectedUser := service.users[0]
+
+		service.AuthUserFunc = func(user models.User) (string, error) {
+			return "", errors.New("error authenticating user")
+		}
+
+		server, _ := NewHCShowCalendarServer(service)
+
+		req := httptest.NewRequest(http.MethodPost, "/auth", userToJSON(expectedUser))
+		res := httptest.NewRecorder()
+
+		server.authUser(res, req)
+
+		assertStatus(t, res.Code, http.StatusInternalServerError)
+	})
 }
 
 func assertStatus(t testing.TB, got, want int) {
@@ -626,6 +941,11 @@ func showToJSON(show models.Show) io.Reader {
 	return bytes.NewReader(b)
 }
 
+func userToJSON(user models.User) io.Reader {
+	b, _ := json.Marshal(user)
+	return bytes.NewReader(b)
+}
+
 func responseToShow(responseBody *bytes.Buffer) models.Show {
 	var showResponse models.Show
 	resBody, _ := io.ReadAll(responseBody)
@@ -633,8 +953,31 @@ func responseToShow(responseBody *bytes.Buffer) models.Show {
 	return showResponse
 }
 
+func responseToUser(responseBody *bytes.Buffer) models.User {
+	var userResponse models.User
+	resBody, _ := io.ReadAll(responseBody)
+	_ = json.Unmarshal(resBody, &userResponse)
+	return userResponse
+}
+
+func responseToMap(responseBody *bytes.Buffer) map[string]string {
+	mapResponse := make(map[string]string)
+	resBody, _ := io.ReadAll(responseBody)
+	_ = json.Unmarshal(resBody, &mapResponse)
+	return mapResponse
+}
+
 func (s *StubHCShowCalendarService) getShowById(id string) *models.Show {
 	for _, v := range s.shows {
+		if v.Id == id {
+			return &v
+		}
+	}
+	return nil
+}
+
+func (s *StubHCShowCalendarService) getUserById(id string) *models.User {
+	for _, v := range s.users {
 		if v.Id == id {
 			return &v
 		}

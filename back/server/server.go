@@ -40,8 +40,9 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService) (*HCShowCal
 	r.HandleFunc("/show/{id}", h.updateShow).Methods("PUT")    //token
 	r.HandleFunc("/show/{id}", h.deleteShow).Methods("DELETE") //token
 
-	r.HandleFunc("/user", h.authUser)
-	r.HandleFunc("/user", h.createUser).Methods("PUT") //token
+	r.HandleFunc("/auth", h.authUser).Methods("POST")
+
+	r.HandleFunc("/user", h.createUser).Methods("POST") //token
 	r.HandleFunc("/user/{id}", h.getUser).Methods("GET")
 	r.HandleFunc("/user/{id}", h.updateUser).Methods("PUT")    // token
 	r.HandleFunc("/user/{id}", h.deleteUser).Methods("DELETE") //token
@@ -256,6 +257,8 @@ func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) 
 	utils.RespondWithJSON(w, code, map[string]string{"token": t})
 }
 
+// do i need to expand this to search by username?
+// maybe in the future
 func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
 	var code = 200
 	var err error
