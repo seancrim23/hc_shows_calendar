@@ -29,6 +29,8 @@ type FirestoreHCShowCalendarService struct {
 func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(), error) {
 	ctx := context.Background()
 
+	fmt.Println(os.Getenv(utils.FIRESTORE_EMULATOR_HOST))
+	fmt.Println(os.Getenv(utils.GCP_PROJECT_ID))
 	if value := os.Getenv(utils.FIRESTORE_EMULATOR_HOST); value != "" {
 		fmt.Println("using firestore emulator: " + value)
 	}
@@ -109,9 +111,12 @@ func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error
 }
 
 func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show) (*models.Show, error) {
-	newShowId := uuid.New()
-	show.Id = newShowId.String()
-	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(newShowId.String()).Set(f.ctx, show)
+	//don't think this will be a problem...
+	if show.Id == "" {
+		newShowId := uuid.New()
+		show.Id = newShowId.String()
+	}
+	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(show.Id).Set(f.ctx, show)
 	if err != nil {
 		fmt.Println("error creating show")
 		fmt.Println(err)

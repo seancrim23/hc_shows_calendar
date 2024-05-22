@@ -16,15 +16,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-/*
-	GetUser(string) (*models.User, error)
-	CreateUser(models.User) (*models.User, error)
-	UpdateUser(string, models.User) (*models.User, error)
-	DeleteUser(string) error
-
-	AuthUser(models.User) (string, error)
-*/
-
 type StubHCShowCalendarService struct {
 	GetShowsFunc   func(showQueryFilters map[string]string) (*[]models.Show, error)
 	GetShowFunc    func(id string) (*models.Show, error)
@@ -97,8 +88,6 @@ func NewStubHCShowCalendarService() *StubHCShowCalendarService {
 	return &StubHCShowCalendarService{shows: testShows, users: testUsers}
 }
 
-// need a get all
-// determine error codes too
 func (s *StubHCShowCalendarService) GetShows(showQueryFilters map[string]string) (*[]models.Show, error) {
 	return s.GetShowsFunc(showQueryFilters)
 }

@@ -11,8 +11,8 @@ type Show struct {
 	//only 2 character state code
 	State string `json:"state" firestore:"state,omitempty"`
 	City  string `json:"city" firestore:"city,omitempty"`
-	Venue string `json:"venue" firestore:"venue, omitempty"`
+	Venue string `json:"venue" firestore:"venue,omitempty"`
 	//street name number: 123 example st.
-	Address  string `json:"address" firestore:"address, omitempty"`
-	Promoter User   `json:"promoter" firestore:"promoter, omitempty"`
+	Address  string `json:"address" firestore:"address,omitempty"`
+	Promoter User   `json:"promoter" firestore:"promoter,omitempty"`
 }
