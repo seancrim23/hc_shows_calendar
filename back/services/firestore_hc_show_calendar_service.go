@@ -59,19 +59,23 @@ func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]st
 	var shows []models.Show
 	var s models.Show
 	var q firestore.Query
-	//TODO make sure this works?
-	//Maybe will have to expand query filters to an object at some point...
+	var iter *firestore.DocumentIterator
+	//is there a better way to do this?
 	collection := f.database.Collection(utils.SHOW_COLLECTION)
-	index := 0
-	for k, v := range showQueryFilters {
-		if index == 0 {
-			q = collection.Where(k, "==", v)
-		} else {
-			q = q.Where(k, "==", v)
+	if len(showQueryFilters) == 0 {
+		iter = collection.Documents(f.ctx)
+	} else {
+		index := 0
+		for k, v := range showQueryFilters {
+			if index == 0 {
+				q = collection.Where(k, "==", v)
+			} else {
+				q = q.Where(k, "==", v)
+			}
+			index++
 		}
-		index++
+		iter = q.Documents(f.ctx)
 	}
-	iter := q.Documents(f.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -104,7 +108,7 @@ func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error
 	err = dsnap.DataTo(&s)
 	if err != nil {
 		fmt.Println(err)
-		return nil, errors.New("error getting post")
+		return nil, errors.New("error getting show")
 	}
 	fmt.Printf("Document data: %#v\n", s)
 	return &s, nil
@@ -147,13 +151,10 @@ func buildShowFirestoreUpdateData(show models.Show) []firestore.Update {
 	//turn my go struct into something firestore will like
 	showTempGenericMap := structs.Map(show)
 	for i, v := range showTempGenericMap {
-		//TODO UPDATE THESE ACCORDINGLY!!!
-		//id and date should never change
-		//dont add to update if field is empty
-		if strings.ToLower(i) != "id" && strings.ToLower(i) != "date" {
-			if v.(string) != "" {
-				fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
-			}
+		if strings.ToLower(i) != "id" && strings.ToLower(i) != "promoter" {
+			//do we need any protection here?
+			//honestly don't think it matters much if a user updates their own show with junk
+			fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
 		}
 	}
 	return fireStoreUpdates
@@ -200,8 +201,11 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 	//not sure if this is a weird way to do it
 	//but will guarantee no possible plain text pass in db
 	u := models.User{Username: user.Username, Hash: string(hashedPassword), Email: user.Email}
-	newUserId := uuid.New()
-	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(newUserId.String()).Set(f.ctx, u)
+	if user.Id == "" {
+		newUserId := uuid.New()
+		u.Id = newUserId.String()
+	}
+	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(u.Id).Set(f.ctx, u)
 	if err != nil {
 		fmt.Println("some sort of error building the add query from firestore")
 		fmt.Println(err)
@@ -232,13 +236,9 @@ func buildUserFirestoreUpdateData(user models.User) []firestore.Update {
 	//turn my go struct into something firestore will like
 	userTempGenericMap := structs.Map(user)
 	for i, v := range userTempGenericMap {
-		//TODO UPDATE AS NEEDED FOR USER!!!
-		//id and date should never change
-		//dont add to update if field is empty
-		if strings.ToLower(i) != "id" && strings.ToLower(i) != "date" {
-			if v.(string) != "" {
-				fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
-			}
+		//maybe add more protection to this?
+		if strings.ToLower(i) != "id" && strings.ToLower(i) != "hash" && strings.ToLower(i) != "pass" {
+			fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
 		}
 	}
 	return fireStoreUpdates

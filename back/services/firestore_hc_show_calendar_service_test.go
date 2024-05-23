@@ -12,14 +12,21 @@ import (
 	"time"
 )
 
-var testUser = models.User{
+var testUser1 = models.User{
 	Id:       "user123",
 	Username: "coolpromoter123",
 	Email:    "coolpromoter123@hotmail.com",
 	Hash:     "reallycoolpassword45",
 }
 
-var testShow = models.Show{
+var testUser2 = models.User{
+	Id:       "user456",
+	Username: "coolpromoter456",
+	Email:    "coolpromoter456@hotmail.com",
+	Hash:     "reallycoolpassword45",
+}
+
+var testShow1 = models.Show{
 	Id:       "abc123",
 	Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
 	Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
@@ -27,7 +34,29 @@ var testShow = models.Show{
 	City:     "Baltimore",
 	Venue:    "Charlie's Chowder Chapel",
 	Address:  "123 Chowder Avenue",
-	Promoter: testUser,
+	Promoter: testUser1,
+}
+
+var testShow2 = models.Show{
+	Id:       "abc456",
+	Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
+	Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	State:    "RI",
+	City:     "Pawtucket",
+	Venue:    "Hal's Hot Dog Hut",
+	Address:  "123 Burger Ave",
+	Promoter: testUser2,
+}
+
+var testShow3 = models.Show{
+	Id:       "xyz123",
+	Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
+	Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+	State:    "RI",
+	City:     "Quahog",
+	Venue:    "The Drunken Clam",
+	Address:  "123 The Clam Ave",
+	Promoter: testUser2,
 }
 
 // better way to do this would be start the firestore emulator command
@@ -66,12 +95,32 @@ func loadTestData() {
 		log.Fatal(err)
 	}
 
-	_, err = service.CreateUser(testUser)
+	_, err = service.CreateUser(testUser1)
 	if err != nil {
 		fmt.Println("failure setting up test user data...")
 		log.Fatal(err)
 	}
-	_, err = service.CreateShow(testShow)
+	_, err = service.CreateUser(testUser2)
+	if err != nil {
+		fmt.Println("failure setting up test user data...")
+		log.Fatal(err)
+	}
+	_, err = service.CreateShow(testShow1)
+	if err != nil {
+		fmt.Println("failure setting up test show data...")
+		log.Fatal(err)
+	}
+	_, err = service.CreateShow(testShow2)
+	if err != nil {
+		fmt.Println("failure setting up test show data...")
+		log.Fatal(err)
+	}
+	_, err = service.CreateShow(testShow1)
+	if err != nil {
+		fmt.Println("failure setting up test show data...")
+		log.Fatal(err)
+	}
+	_, err = service.CreateShow(testShow3)
 	if err != nil {
 		fmt.Println("failure setting up test show data...")
 		log.Fatal(err)
@@ -87,7 +136,62 @@ func cleanupTests() {
 }
 
 func TestGetShows(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can get all shows with no query filters passed in", func(t *testing.T) {
+		testEmptyFilters := map[string]string{}
+		shows, err := service.GetShows(testEmptyFilters)
+		if err != nil {
+			fmt.Println("failure getting test show data...")
+			log.Fatal(err)
+		}
+		if len(*shows) != 3 {
+			t.Fatalf("expected 3 shows in response but got %d", len(*shows))
+		}
+	})
+	t.Run("can get correct show when one query filter passed in", func(t *testing.T) {
+		testQueryFilter := map[string]string{
+			"city": "Baltimore",
+		}
+		shows, err := service.GetShows(testQueryFilter)
+		if err != nil {
+			fmt.Println("failure getting test show data...")
+			log.Fatal(err)
+		}
+
+		if len(*shows) != 1 {
+			t.Fatalf("expected 1 shows in response but got %d", len(*shows))
+		}
+		if (*shows)[0].City != "Baltimore" {
+			t.Fatalf("expected city of %q in response", (*shows)[0].City)
+		}
+	})
+	t.Run("can get correct show when two query filters are passed in", func(t *testing.T) {
+		testQueryFilter := map[string]string{
+			"city":  "Quahog",
+			"state": "RI",
+		}
+		shows, err := service.GetShows(testQueryFilter)
+		if err != nil {
+			fmt.Println("failure getting test show data...")
+			log.Fatal(err)
+		}
+
+		if len(*shows) != 1 {
+			t.Fatalf("expected 1 shows in response but got %d", len(*shows))
+		}
+		if (*shows)[0].City != "Quahog" {
+			t.Fatalf("expected city of %q in response got %q", "Quahog", (*shows)[0].City)
+		}
+		if (*shows)[0].State != "RI" {
+			t.Fatalf("expected state of %q in response got %q", "RI", (*shows)[0].State)
+		}
+	})
 }
 
 func TestGetShow(t *testing.T) {
@@ -98,40 +202,235 @@ func TestGetShow(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	show, err := service.GetShow(testShow.Id)
-	if err != nil {
-		fmt.Println("failure getting test show data...")
-		log.Fatal(err)
-	}
-	fmt.Println(show)
+	t.Run("can get a show with the correct show id", func(t *testing.T) {
+		show, err := service.GetShow(testShow1.Id)
+		if err != nil {
+			fmt.Println("failure getting test show data...")
+			log.Fatal(err)
+		}
+		if show.Id != testShow1.Id {
+			t.Fatalf("expected id of %q in response but got %q", show.Id, testShow1.Id)
+		}
+	})
+	t.Run("does not get a show with an invalid show id", func(t *testing.T) {
+		_, err := service.GetShow("badshowid")
+		if err == nil {
+			t.Fatalf("expected error when bad show id is passed to service")
+		}
+	})
 }
 
 func TestCreateShow(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can create a show with valid show info", func(t *testing.T) {
+		var testShow = models.Show{
+			Id:       "aaa111",
+			Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
+			Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+			State:    "RI",
+			City:     "Quahog",
+			Venue:    "The Drunken Clam",
+			Address:  "123 The Clam Ave",
+			Promoter: testUser2,
+		}
+		show, err := service.CreateShow(testShow)
+		if err != nil {
+			fmt.Println("failure creating test show data...")
+			log.Fatal(err)
+		}
+		if show.Id != testShow.Id {
+			t.Fatalf("expected id of %q in response but got %q", show.Id, testShow.Id)
+		}
+		err = service.DeleteShow(testShow.Id)
+		if err != nil {
+			fmt.Println("failure deleting test show data...")
+			log.Fatal(err)
+		}
+	})
 }
 
 func TestUpdateShow(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can correctly update a show", func(t *testing.T) {
+		var testShow = models.Show{
+			Id:       "xyz123",
+			Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
+			Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+			State:    "RI",
+			City:     "Quahog",
+			Venue:    "Chris' Corn Castle",
+			Address:  "123 Corn St",
+			Promoter: testUser2,
+		}
+
+		show, err := service.UpdateShow(testShow.Id, testShow)
+		if err != nil {
+			fmt.Println("failure updating show data")
+			log.Fatal(err)
+		}
+
+		if (*show).Venue != testShow.Venue {
+			t.Fatalf("expected venue of %q in response got %q", testShow.Venue, (*show).Venue)
+		}
+		if (*show).Address != testShow.Address {
+			t.Fatalf("expected address of %q in response got %q", testShow.Address, (*show).Address)
+		}
+
+	})
 }
 
 func TestDeleteShow(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can create a show and then delete a show with valid show info", func(t *testing.T) {
+		var testShow = models.Show{
+			Id:       "aaa111",
+			Lineup:   models.Lineup{"cool band 1", "cool band 2", "cool band 3", "cool band 4"},
+			Date:     time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+			State:    "RI",
+			City:     "Quahog",
+			Venue:    "The Drunken Clam",
+			Address:  "123 The Clam Ave",
+			Promoter: testUser2,
+		}
+		_, err := service.CreateShow(testShow)
+		if err != nil {
+			fmt.Println("failure creating test show data...")
+			log.Fatal(err)
+		}
+
+		err = service.DeleteShow(testShow.Id)
+		if err != nil {
+			t.Fatalf("expected successful delete of show")
+		}
+	})
 }
 
 func TestGetUser(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can get a user with the correct user id", func(t *testing.T) {
+		user, err := service.GetUser(testUser1.Id)
+		if err != nil {
+			fmt.Println("failure getting test user data...")
+			log.Fatal(err)
+		}
+		if user.Id != testUser1.Id {
+			t.Fatalf("expected id of %q in response but got %q", user.Id, testUser1.Id)
+		}
+	})
+	t.Run("does not get a user with an invalid user id", func(t *testing.T) {
+		_, err := service.GetUser("baduserid")
+		if err == nil {
+			t.Fatalf("expected error when bad user id is passed to service")
+		}
+	})
 }
 
 func TestCreateUser(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can create a user with valid user info", func(t *testing.T) {
+		var testUser = models.User{
+			Id:       "user111",
+			Username: "coolpromoter111",
+			Email:    "coolpromoter111@hotmail.com",
+			Hash:     "reallycoolpassword45",
+		}
+		user, err := service.CreateUser(testUser)
+		if err != nil {
+			fmt.Println("failure creating test user data...")
+			log.Fatal(err)
+		}
+		if user.Id != testUser.Id {
+			t.Fatalf("expected id of %q in response but got %q", user.Id, testUser.Id)
+		}
+		err = service.DeleteUser(testUser.Id)
+		if err != nil {
+			fmt.Println("failure deleting test user data...")
+			log.Fatal(err)
+		}
+	})
 }
 
 func TestUpdateUser(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can correctly update a user", func(t *testing.T) {
+		var testUser = models.User{
+			Id:    "user456",
+			Email: "coolupdatedemail@hotmail.com",
+		}
+
+		user, err := service.UpdateUser(testUser.Id, testUser)
+		if err != nil {
+			fmt.Println("failure updating user data")
+			log.Fatal(err)
+		}
+
+		if (*user).Email != testUser.Email {
+			t.Fatalf("expected email of %q in response got %q", testUser.Email, (*user).Email)
+		}
+	})
 }
 
 func TestDeleteUser(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can create a user and successfully delete with valid user info", func(t *testing.T) {
+		var testUser = models.User{
+			Id:       "user111",
+			Username: "coolpromoter111",
+			Email:    "coolpromoter111@hotmail.com",
+			Hash:     "reallycoolpassword45",
+		}
+		user, err := service.CreateUser(testUser)
+		if err != nil {
+			fmt.Println("failure creating test user data...")
+			log.Fatal(err)
+		}
+		err = service.DeleteUser(user.Id)
+		if err != nil {
+			t.Fatalf("expected successful delete of user")
+		}
+	})
 }
 
 func TestAuthUser(t *testing.T) {
