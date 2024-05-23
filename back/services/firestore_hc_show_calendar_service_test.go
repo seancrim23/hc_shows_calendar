@@ -338,7 +338,7 @@ func TestGetUser(t *testing.T) {
 			log.Fatal(err)
 		}
 		if user.Id != testUser1.Id {
-			t.Fatalf("expected id of %q in response but got %q", user.Id, testUser1.Id)
+			t.Fatalf("expected id of %q in response but got %q", testUser1.Id, user.Id)
 		}
 	})
 	t.Run("does not get a user with an invalid user id", func(t *testing.T) {
