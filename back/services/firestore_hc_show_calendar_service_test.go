@@ -434,5 +434,32 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestAuthUser(t *testing.T) {
+	service, close, err := NewFirestoreHCShowCalendarService()
+	defer close()
+	if err != nil {
+		fmt.Println("failure starting service...")
+		log.Fatal(err)
+	}
 
+	t.Run("can create a user and successfully authorize the user with valid user info", func(t *testing.T) {
+		var testUser = models.User{
+			Id:       "user111",
+			Username: "coolpromoter111",
+			Email:    "coolpromoter111@hotmail.com",
+			Pass:     "reallycoolpassword45",
+		}
+		_, err := service.CreateUser(testUser)
+		if err != nil {
+			fmt.Println("failure creating test user data...")
+			log.Fatal(err)
+		}
+		token, err := service.AuthUser(testUser)
+		if err != nil {
+			fmt.Println("failure authorizing test user ...")
+			log.Fatal(err)
+		}
+		if token == "" {
+			t.Fatalf("expected a token from successful user auth")
+		}
+	})
 }
