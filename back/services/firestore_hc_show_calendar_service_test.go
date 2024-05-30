@@ -65,7 +65,7 @@ var testShow3 = models.Show{
 // clean up
 func TestMain(m *testing.M) {
 	os.Setenv(utils.FIRESTORE_EMULATOR_HOST, utils.LOCALHOST+":"+utils.FIRESTORE_EMULATOR_PORT)
-	os.Setenv(utils.GCP_PROJECT_ID, "my-site-back")
+	os.Setenv(utils.GCP_PROJECT_ID, "hc-show-calendar")
 	go setupTests()
 	//sleep to ensure the emulator starts...
 	time.Sleep(5 * time.Second)
