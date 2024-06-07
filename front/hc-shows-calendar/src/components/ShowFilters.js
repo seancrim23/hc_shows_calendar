@@ -23,6 +23,8 @@ function ShowFilters({ setShowList, setHasError }) {
         fetchShows({ state: stateCode, city: event.target.value })
     }
 
+    //TODO is query params best way? or does it matter?
+    //TODO do i need to do anything to protect query params?
     async function fetchShows(filters) {
         //state at least will always be included in this request
         let url = "http://localhost:8080/show?state=" + encodeURIComponent(filters.state);
