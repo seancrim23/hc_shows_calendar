@@ -1,6 +1,10 @@
-function Show() {
+function Show({ show }) {
     return (
-        <p>SHOW COMPONENT</p>
+        <>
+            <p>{show.id}</p>
+            <p>{show.location}</p>
+            <p>{show.bands}</p>
+        </>
     );
 }
 
