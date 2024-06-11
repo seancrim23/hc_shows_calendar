@@ -4,6 +4,8 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import { useState } from 'react';
 
 function ShowFilters({ setShowList, setHasError }) {
@@ -18,9 +20,9 @@ function ShowFilters({ setShowList, setHasError }) {
         fetchShows({ state: event.target.value, city: '' })
     };
 
-    const handleCityChange = (event) => {
-        setCity(event.target.value);
-        fetchShows({ state: stateCode, city: event.target.value })
+    const handleCityChange = (event, newValue) => {
+        setCity(newValue);
+        fetchShows({ state: stateCode, city: newValue })
     }
 
     //TODO is query params best way? or does it matter?
@@ -30,7 +32,8 @@ function ShowFilters({ setShowList, setHasError }) {
         let url = "http://localhost:8080/show?state=" + encodeURIComponent(filters.state);
         //let url = process.env.HC_CALENDAR_APP_BACK_URL + '/show?state=' + filters.state;
 
-        if (filters.city !== '') {
+        //if filters city exists and is not empty...
+        if (filters.city && filters.city !== '') {
             url = url + '&city=' + encodeURIComponent(filters.city);
         }
         //if state is not empty
@@ -44,8 +47,12 @@ function ShowFilters({ setShowList, setHasError }) {
                     'Content-Type': 'application/json'
                 },
             });
-
-            setShowList(response)
+            const responseData = await response.json();
+            if (responseData) {
+                setShowList(responseData);
+            } else {
+                setShowList([]);
+            }
         } catch (error) {
             console.log(error)
             console.log("log out the error here but don't return it to the user")
@@ -74,18 +81,16 @@ function ShowFilters({ setShowList, setHasError }) {
                     </Select>
                 </FormControl>
                 {stateCode && <FormControl sx={{ m: 1, minWidth: 160 }}>
-                    <InputLabel id="city-label">City / Town / Municipality</InputLabel>
-                    <Select
-                        labelId="city-label"
-                        id="city-select"
+                    <Autocomplete
+                        disablePortal
+                        id="city-list"
+                        options={cityList}
+                        sx={{ width: 300 }}
+                        renderInput={(params) => <TextField {...params} label="City" />}
                         value={city}
-                        label="City"
                         onChange={handleCityChange}
-                    >
-                        {cityList.map((city) => (
-                            <MenuItem key={city} value={city}>{city}</MenuItem>
-                        ))}
-                    </Select>
+                        isOptionEqualToValue={(city, value) => city.value === value.value}
+                    />
                 </FormControl>}
             </Box>
         </>

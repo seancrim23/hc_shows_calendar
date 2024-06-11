@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -47,6 +48,7 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService) (*HCShowCal
 	r.HandleFunc("/user/{id}", h.updateUser).Methods("PUT")    // token
 	r.HandleFunc("/user/{id}", h.deleteUser).Methods("DELETE") //token
 
+	fmt.Println(os.Getenv(utils.ALLOWED_ORIGINS))
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{os.Getenv(utils.ALLOWED_ORIGINS)},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},

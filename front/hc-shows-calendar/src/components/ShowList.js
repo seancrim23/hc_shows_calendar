@@ -1,4 +1,4 @@
-import Show from "./Show";
+import Show from './Show';
 
 function ShowList({ shows }) {
     return (
