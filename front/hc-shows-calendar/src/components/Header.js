@@ -14,17 +14,19 @@ function Header() {
   return (
     <Grid item xs={12}>
       <Box sx={{ flexGrow: 1, marginTop: 2 }}>
-        <AppBar position="static" sx={{ background: 'white', width:700 }}>
-          <Box sx={{textAlign:'center'}}>
-          <img src={hc_shows_calendar_logo} alt="logo" height={200} width={500} />
-          </Box>
+        <AppBar position="static" sx={{ background: 'white', width: 700 }}>
+          <a href='/'>
+            <Box sx={{ textAlign: 'center' }}>
+              <img src={hc_shows_calendar_logo} alt="logo" height={200} width={500} />
+            </Box>
+          </a>
           <Breadcrumbs sx={{
             "& ol": {
               justifyContent: "center",
               margin: "auto"
             },
-            marginTop:0.5,
-            marginBottom:1,
+            marginTop: 0.5,
+            marginBottom: 1,
           }} >
             <Link color="inherit" underline="hover">Login</Link>
           </Breadcrumbs>

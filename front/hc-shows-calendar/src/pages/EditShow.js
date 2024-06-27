@@ -1,7 +1,11 @@
+import ShowForm from "../components/ShowForm";
+
 function EditShowPage() {
+    //load show id info
+    const show = {}
     return (
         <div>
-            edit show page
+            <ShowForm method='PUT' show={show} />
         </div>
     )
 }

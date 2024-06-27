@@ -25,7 +25,8 @@ const router = createBrowserRouter([
           },
           {
             path: 'new',
-            element: <NewShowPage />
+            element: <NewShowPage />,
+            action: manipulateShowAction
           },
           {
             path: ":id",
