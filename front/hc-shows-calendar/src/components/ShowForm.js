@@ -13,11 +13,24 @@ import Card from '@mui/material/Card'
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
+import * as Yup from 'yup';
+import { REQUIRED_FIELD } from '../util/Constants';
+import statesMapping from '../assets/StatesMapping.json';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+
 
 //add validation
 function ShowForm({ method, show }) {
     const submit = useSubmit();
     const showSubmitMethod = method === 'PUT' ? 'Edit' : 'Create';
+
+    const validateSchema = Yup.object().shape({
+        venue: Yup.string().required(REQUIRED_FIELD),
+        address: Yup.string().required(REQUIRED_FIELD),
+        state: Yup.string().required(REQUIRED_FIELD),
+        city: Yup.string().required(REQUIRED_FIELD),
+    })
 
     return (
         <Card sx={{ marginTop: 1.5, marginBottom: 1.5 }}>
@@ -34,9 +47,9 @@ function ShowForm({ method, show }) {
                         city: '',
                         lineup: [],
                     }}
+                    validationSchema={validateSchema}
                     onSubmit={async (values) => {
                         submit(values, { method: method });
-
                     }}>
                     {props => (
                         <Form onSubmit={props.handleSubmit}>
@@ -72,8 +85,12 @@ function ShowForm({ method, show }) {
                                 name="venue"
                                 label="Venue"
                                 value={props.values.venue}
+                                onBlur={props.handleBlur}
                                 onChange={props.handleChange}
                             />
+                            {props.touched.venue && props.errors.venue ? (
+                                <div>{props.errors.venue}</div>
+                            ) : null}
 
                             <h3>Address</h3>
                             <TextField
@@ -81,17 +98,30 @@ function ShowForm({ method, show }) {
                                 name="address"
                                 label="Address"
                                 value={props.values.address}
+                                onBlur={props.handleBlur}
                                 onChange={props.handleChange}
                             />
+                            {props.touched.address && props.errors.address ? (
+                                <div>{props.errors.address}</div>
+                            ) : null}
 
                             <h3>State</h3>
-                            <TextField
+                            <Select
                                 id="state"
                                 name="state"
                                 label="State"
                                 value={props.values.state}
                                 onChange={props.handleChange}
-                            />
+                            >
+                                {
+                                    Object.keys(statesMapping).map((key, i) => (
+                                        <MenuItem key={i} value={key}>{key}</MenuItem>
+                                    ))
+                                }
+                            </Select>
+                            {props.touched.state && props.errors.state ? (
+                                <div>{props.errors.state}</div>
+                            ) : null}
 
                             <h3>City</h3>
                             <TextField
@@ -99,8 +129,12 @@ function ShowForm({ method, show }) {
                                 name="city"
                                 label="City"
                                 value={props.values.city}
+                                onBlur={props.handleBlur}
                                 onChange={props.handleChange}
                             />
+                            {props.touched.city && props.errors.city ? (
+                                <div>{props.errors.city}</div>
+                            ) : null}
 
                             <h3>Lineup</h3>
                             <FieldArray
@@ -110,7 +144,7 @@ function ShowForm({ method, show }) {
                                     <div>
                                         {props.values.lineup.map((band, index) => (
                                             <div key={index}>
-                                                <TextField sx={{ marginBottom: 1 }} name={`lineup.${index}`} value={band} onChange={props.handleChange} />
+                                                <TextField sx={{ marginBottom: 1 }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
                                                 <Button
                                                     sx={{ marginLeft: 1 }}
                                                     type="button"
@@ -180,8 +214,6 @@ export async function action({ request, params }) {
     if (!response.ok) {
         throw json({ message: 'Could not save show!' }, { status: 500 });
     }*/
-
-    console.log(data);
 
     return redirect('/');
 }
