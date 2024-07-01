@@ -30,7 +30,18 @@ function ShowForm({ method, show }) {
         address: Yup.string().required(REQUIRED_FIELD),
         state: Yup.string().required(REQUIRED_FIELD),
         city: Yup.string().required(REQUIRED_FIELD),
+        lineup: Yup.array(Yup.string().required(REQUIRED_FIELD)).min(1),
     })
+
+    show = {
+        date: '1/1/2000',
+        time: dayjs().format('MM/DD/YYYY') + ' 08:00 PM',
+        venue: 'some venue',
+        address: '123 some venue',
+        state: 'MD',
+        city: "cool city",
+        lineup: ["band 1", "band 2", "band 3", "band 4"]
+    }
 
     return (
         <Card sx={{ marginTop: 1.5, marginBottom: 1.5 }}>
@@ -39,13 +50,13 @@ function ShowForm({ method, show }) {
                 <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
                 <Formik
                     initialValues={{
-                        date: dayjs(),
-                        time: dayjs(),
-                        venue: '',
-                        address: '',
-                        state: '',
-                        city: '',
-                        lineup: [],
+                        date: show && show.date ? dayjs(show.date) : dayjs(),
+                        time: show && show.time ? dayjs(show.time) : dayjs(),
+                        venue: show && show.venue ? show.venue : '',
+                        address: show && show.address ? show.address : '',
+                        state: show && show.state ? show.state : '',
+                        city: show && show.city ? show.city : '',
+                        lineup: show && show.lineup ? show.lineup : [],
                     }}
                     validationSchema={validateSchema}
                     onSubmit={async (values) => {
@@ -154,6 +165,9 @@ function ShowForm({ method, show }) {
                                                 >
                                                     X
                                                 </Button>
+                                                {props.touched.lineup && props.errors.lineup ? (
+                                                    <div>{props.errors.lineup[index]}</div>
+                                                ) : null}
                                             </div>
                                         ))}
                                         <Button type="button" variant="outlined" onClick={() => arrayHelpers.push('')}>
@@ -163,7 +177,7 @@ function ShowForm({ method, show }) {
                                 )}
                             />
                             <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
-                            <Button type="submit" color="primary" variant="contained">Create Show</Button>
+                            <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained">Create Show</Button>
                         </Form>
                     )}
                 </Formik>
@@ -179,6 +193,13 @@ export async function action({ request, params }) {
     const data = await request.formData();
 
     console.log(Object.fromEntries(data));
+    const tempDate = Object.fromEntries(data).date;
+    const tempTime = Object.fromEntries(data).time;
+
+    console.log(dayjs(tempDate).format('MM/DD/YYYY'))
+    console.log(dayjs(tempTime).format('h:mm a'))
+
+
 
     /*const currentDate = new Date();
 
