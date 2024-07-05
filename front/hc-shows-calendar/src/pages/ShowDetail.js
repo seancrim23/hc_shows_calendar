@@ -3,18 +3,14 @@ import { Suspense } from "react";
 import Show from "../components/Show";
 
 function ShowDetailPage() {
-    /*const { show } = useRouteLoaderData("show-detail");
+    const { show } = useRouteLoaderData("show-detail");
 
-    return <Suspense fallback={<p style={{ textAlign: 'center' }}>Loading...</p>}>
-        <Await resolve={show}>
-            {loadedShow => <Show show={loadedShow} />}
-        </Await>
-    </Suspense>;*/
     return (
-        <div>
-            this page will display detail about a show and allow user to edit or delete if they want to
-            <p>SHOULD BE TOKEN PROTECTED NO ACCESS WITHOUT LOGIN</p>
-        </div>
+        <Suspense fallback={<p>Loading...</p>}>
+            <Await resolve={show}>
+                {loadedShow => <Show show={loadedShow} />}
+            </Await>
+        </Suspense>
     )
 }
 
@@ -22,13 +18,22 @@ export default ShowDetailPage;
 
 async function loadShow(id) {
     //implement to hit db to load show by id
+    const response = await fetch(process.env.REACT_APP_BACK_URL + "/show/" + id);
+
+    if (!response.ok) {
+        throw json({ message: "could not find show." }, { status: 500 });
+    } else {
+        const resData = await response.json();
+        console.log(resData);
+        return resData;
+    }
 }
 
 export async function loader({ params }) {
     const id = params.id;
 
     return defer({
-        design: await loadShow(id)
+        show: await loadShow(id)
     })
 }
 

@@ -33,7 +33,7 @@ function ShowForm({ method, show }) {
         lineup: Yup.array(Yup.string().required(REQUIRED_FIELD)).min(1),
     })
 
-    show = {
+    /*show = {
         date: '1/1/2000',
         time: dayjs().format('MM/DD/YYYY') + ' 08:00 PM',
         venue: 'some venue',
@@ -41,7 +41,7 @@ function ShowForm({ method, show }) {
         state: 'MD',
         city: "cool city",
         lineup: ["band 1", "band 2", "band 3", "band 4"]
-    }
+    }*/
 
     return (
         <Card sx={{ marginTop: 1.5, marginBottom: 1.5 }}>
@@ -177,7 +177,7 @@ function ShowForm({ method, show }) {
                                 )}
                             />
                             <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
-                            <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained">Create Show</Button>
+                            <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained">{showSubmitMethod} Show</Button>
                         </Form>
                     )}
                 </Formik>
@@ -192,38 +192,31 @@ export async function action({ request, params }) {
     const method = request.method;
     const data = await request.formData();
 
-    console.log(Object.fromEntries(data));
-    const tempDate = Object.fromEntries(data).date;
-    const tempTime = Object.fromEntries(data).time;
-
-    console.log(dayjs(tempDate).format('MM/DD/YYYY'))
-    console.log(dayjs(tempTime).format('h:mm a'))
-
-
-
-    /*const currentDate = new Date();
-
     const showData = {
-        title: data.get('title'),
-        content: data.get('content'),
-        date: currentDate
-    };
+        date: dayjs(Object.fromEntries(data).date),
+        time: dayjs(Object.fromEntries(data).time),
+        venue: Object.fromEntries(data).venue,
+        address: Object.fromEntries(data).address,
+        state: Object.fromEntries(data).state,
+        city: Object.fromEntries(data).city,
+        lineup: (Object.fromEntries(data).lineup).split(',')
+    }
 
     let url = process.env.REACT_APP_BACK_URL + '/show';
 
     if (method === 'PUT') {
-        console.log("updating blog post...")
         const showId = params.id;
         url = url + '/' + showId;
     }
 
-    const token = getAuthToken();
+    //TODO implement token
+    //const token = getAuthToken();
 
     const response = await fetch(url, {
         method: method,
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
+            //'Authorization': 'Bearer ' + token TODO: IMPLEMENT TOKEN
         },
         body: JSON.stringify(showData),
     });
@@ -234,7 +227,7 @@ export async function action({ request, params }) {
 
     if (!response.ok) {
         throw json({ message: 'Could not save show!' }, { status: 500 });
-    }*/
+    }
 
     return redirect('/');
 }

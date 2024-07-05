@@ -13,6 +13,7 @@ type Show struct {
 	City  string `json:"city" firestore:"city,omitempty"`
 	Venue string `json:"venue" firestore:"venue,omitempty"`
 	//street name number: 123 example st.
-	Address  string `json:"address" firestore:"address,omitempty"`
-	Promoter User   `json:"promoter" firestore:"promoter,omitempty"`
+	Address string `json:"address" firestore:"address,omitempty"`
+	//this should be the promoter id / username
+	Promoter string `json:"promoter" firestore:"promoter,omitempty"`
 }

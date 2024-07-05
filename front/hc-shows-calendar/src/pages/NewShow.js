@@ -4,7 +4,6 @@ function NewShowPage() {
     return (
         <div>
             <ShowForm method='POST' />
-            <p>SHOULD BE TOKEN PROTECTED NO ACCESS WITHOUT LOGIN</p>
         </div>
     )
 }

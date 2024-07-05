@@ -123,12 +123,15 @@ func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		code = 400
+		fmt.Println(err)
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
+
 	err = json.Unmarshal(reqBody, &show)
 	if err != nil {
 		code = 400
+		fmt.Println(err)
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
@@ -136,6 +139,7 @@ func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request
 	s, err := h.service.CreateShow(show)
 	if err != nil {
 		code = 500
+		fmt.Println(err)
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
