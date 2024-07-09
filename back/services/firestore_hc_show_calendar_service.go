@@ -200,13 +200,13 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 	}
 	//not sure if this is a weird way to do it
 	//but will guarantee no possible plain text pass in db
-	userId := user.Id
+	/*userId := user.Id
 	if userId == "" {
 		newUserId := uuid.New()
 		userId = newUserId.String()
-	}
-	u := models.User{Id: userId, Username: user.Username, Hash: string(hashedPassword), Email: user.Email}
-	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(u.Id).Set(f.ctx, u)
+	}*/
+	u := models.User{Username: user.Username, Hash: string(hashedPassword), Email: user.Email}
+	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(u.Username).Set(f.ctx, u)
 	if err != nil {
 		fmt.Println("some sort of error building the add query from firestore")
 		fmt.Println(err)

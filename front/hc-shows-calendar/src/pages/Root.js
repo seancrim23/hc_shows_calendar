@@ -10,7 +10,7 @@ function RootLayout() {
         justifyContent="center"
         spacing={0}
         direction="column"
-        sx={{background:'#636363'}}>
+        sx={{ background: '#636363' }}>
         <Header />
         <Outlet />
         <Footer />

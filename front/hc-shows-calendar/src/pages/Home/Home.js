@@ -18,7 +18,7 @@ function HomePage() {
             </Box>
             <Box sx={showListStyles.wrapper}>
                 {hasError ? <p>Error retrieving shows, please try filtering again (idk if it still doesnt work contact me?)</p> :
-                    <ShowList shows={showList} hasError={hasError} noShowsMessage={"No shows at the moment! Choose filters to find shows near you!"} />
+                    <ShowList shows={showList} hasError={hasError} isPromoter={false} noShowsMessage={"No shows at the moment! Choose filters to find shows near you!"} />
                 }
             </Box>
         </GridWrapper>

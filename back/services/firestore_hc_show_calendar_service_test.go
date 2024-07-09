@@ -13,14 +13,12 @@ import (
 )
 
 var testUser1 = models.User{
-	Id:       "user123",
 	Username: "coolpromoter123",
 	Email:    "coolpromoter123@hotmail.com",
 	Hash:     "reallycoolpassword45",
 }
 
 var testUser2 = models.User{
-	Id:       "user456",
 	Username: "coolpromoter456",
 	Email:    "coolpromoter456@hotmail.com",
 	Hash:     "reallycoolpassword45",
@@ -34,7 +32,7 @@ var testShow1 = models.Show{
 	City:     "Baltimore",
 	Venue:    "Charlie's Chowder Chapel",
 	Address:  "123 Chowder Avenue",
-	Promoter: testUser1,
+	Promoter: "coolpromoter123",
 }
 
 var testShow2 = models.Show{
@@ -45,7 +43,7 @@ var testShow2 = models.Show{
 	City:     "Pawtucket",
 	Venue:    "Hal's Hot Dog Hut",
 	Address:  "123 Burger Ave",
-	Promoter: testUser2,
+	Promoter: "coolpromoter456",
 }
 
 var testShow3 = models.Show{
@@ -56,7 +54,7 @@ var testShow3 = models.Show{
 	City:     "Quahog",
 	Venue:    "The Drunken Clam",
 	Address:  "123 The Clam Ave",
-	Promoter: testUser2,
+	Promoter: "coolpromoter456",
 }
 
 // better way to do this would be start the firestore emulator command
@@ -237,7 +235,7 @@ func TestCreateShow(t *testing.T) {
 			City:     "Quahog",
 			Venue:    "The Drunken Clam",
 			Address:  "123 The Clam Ave",
-			Promoter: testUser2,
+			Promoter: "coolpromoter456",
 		}
 		show, err := service.CreateShow(testShow)
 		if err != nil {
@@ -272,7 +270,7 @@ func TestUpdateShow(t *testing.T) {
 			City:     "Quahog",
 			Venue:    "Chris' Corn Castle",
 			Address:  "123 Corn St",
-			Promoter: testUser2,
+			Promoter: "coolpromoter456",
 		}
 
 		show, err := service.UpdateShow(testShow.Id, testShow)
@@ -308,7 +306,7 @@ func TestDeleteShow(t *testing.T) {
 			City:     "Quahog",
 			Venue:    "The Drunken Clam",
 			Address:  "123 The Clam Ave",
-			Promoter: testUser2,
+			Promoter: "coolpromoter456",
 		}
 		_, err := service.CreateShow(testShow)
 		if err != nil {
@@ -332,13 +330,13 @@ func TestGetUser(t *testing.T) {
 	}
 
 	t.Run("can get a user with the correct user id", func(t *testing.T) {
-		user, err := service.GetUser(testUser1.Id)
+		user, err := service.GetUser(testUser1.Username)
 		if err != nil {
 			fmt.Println("failure getting test user data...")
 			log.Fatal(err)
 		}
-		if user.Id != testUser1.Id {
-			t.Fatalf("expected id of %q in response but got %q", testUser1.Id, user.Id)
+		if user.Username != testUser1.Username {
+			t.Fatalf("expected id of %q in response but got %q", testUser1.Username, user.Username)
 		}
 	})
 	t.Run("does not get a user with an invalid user id", func(t *testing.T) {
@@ -359,7 +357,6 @@ func TestCreateUser(t *testing.T) {
 
 	t.Run("can create a user with valid user info", func(t *testing.T) {
 		var testUser = models.User{
-			Id:       "user111",
 			Username: "coolpromoter111",
 			Email:    "coolpromoter111@hotmail.com",
 			Hash:     "reallycoolpassword45",
@@ -369,10 +366,10 @@ func TestCreateUser(t *testing.T) {
 			fmt.Println("failure creating test user data...")
 			log.Fatal(err)
 		}
-		if user.Id != testUser.Id {
-			t.Fatalf("expected id of %q in response but got %q", user.Id, testUser.Id)
+		if user.Username != testUser.Username {
+			t.Fatalf("expected id of %q in response but got %q", user.Username, testUser.Username)
 		}
-		err = service.DeleteUser(testUser.Id)
+		err = service.DeleteUser(testUser.Username)
 		if err != nil {
 			fmt.Println("failure deleting test user data...")
 			log.Fatal(err)
@@ -390,11 +387,11 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("can correctly update a user", func(t *testing.T) {
 		var testUser = models.User{
-			Id:    "user456",
-			Email: "coolupdatedemail@hotmail.com",
+			Username: "coolupdatedemail",
+			Email:    "coolupdatedemail@hotmail.com",
 		}
 
-		user, err := service.UpdateUser(testUser.Id, testUser)
+		user, err := service.UpdateUser(testUser.Username, testUser)
 		if err != nil {
 			fmt.Println("failure updating user data")
 			log.Fatal(err)
@@ -416,7 +413,6 @@ func TestDeleteUser(t *testing.T) {
 
 	t.Run("can create a user and successfully delete with valid user info", func(t *testing.T) {
 		var testUser = models.User{
-			Id:       "user111",
 			Username: "coolpromoter111",
 			Email:    "coolpromoter111@hotmail.com",
 			Hash:     "reallycoolpassword45",
@@ -426,7 +422,7 @@ func TestDeleteUser(t *testing.T) {
 			fmt.Println("failure creating test user data...")
 			log.Fatal(err)
 		}
-		err = service.DeleteUser(user.Id)
+		err = service.DeleteUser(user.Username)
 		if err != nil {
 			t.Fatalf("expected successful delete of user")
 		}
@@ -443,7 +439,6 @@ func TestAuthUser(t *testing.T) {
 
 	t.Run("can create a user and successfully authorize the user with valid user info", func(t *testing.T) {
 		var testUser = models.User{
-			Id:       "user111",
 			Username: "coolpromoter111",
 			Email:    "coolpromoter111@hotmail.com",
 			Pass:     "reallycoolpassword45",

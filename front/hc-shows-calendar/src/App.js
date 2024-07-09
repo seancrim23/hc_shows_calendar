@@ -6,8 +6,10 @@ import ShowDetailPage, { loader as showDetailLoader, action as deleteShowAction 
 import { action as manipulateShowAction } from './components/ShowForm';
 import NewShowPage from './pages/NewShow';
 import EditShowPage from './pages/EditShow';
-import UserDetailPage from './pages/UserDetail';
+import UserDetailPage, { loader as userDetailLoader} from './pages/UserDetail';
 import UserShowListPage, { loader as userShowListLoader } from './pages/UserShowList';
+import { action as authorizeAction } from './components/AuthForm';
+import AuthPage from './pages/Auth';
 
 //TODO add auth loader
 const router = createBrowserRouter([
@@ -17,6 +19,11 @@ const router = createBrowserRouter([
     id: 'root',
     children: [
       { index: true, element: <HomePage /> },
+      {
+        path: 'login',
+        element: <AuthPage />,
+        action: authorizeAction,
+      },
       {
         path: 'shows',
         children: [
@@ -50,17 +57,16 @@ const router = createBrowserRouter([
         ]
       },
       {
-        //user should only be able to get here if logged in...
-        path: 'user',
-        id: 'user-detail',
+        path: 'user/profile',
         loader: userDetailLoader,
-        children: [
-          {
-            index: true,
-            element: <UserDetailPage />,
-            
-          }
-        ]
+        id: 'user-detail',
+        element: <UserDetailPage />
+      },
+      {
+        path: 'user/shows',
+        loader: userShowListLoader,
+        id: 'user-show-list',
+        element: <UserShowListPage />,
       }
     ]
   }

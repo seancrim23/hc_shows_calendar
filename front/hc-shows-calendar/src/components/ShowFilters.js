@@ -6,6 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
+import Button from '@mui/material/Button';
 import { useState } from 'react';
 
 function ShowFilters({ setShowList, setHasError }) {
@@ -23,6 +24,13 @@ function ShowFilters({ setShowList, setHasError }) {
     const handleCityChange = (event, newValue) => {
         setCity(newValue);
         fetchShows({ state: stateCode, city: newValue })
+    }
+
+    const handleClearSearchFilters = (event) => {
+        setStateCode('');
+        setCityList([]);
+        setCity('');
+        setShowList([]);
     }
 
     //TODO is query params best way? or does it matter?
@@ -80,18 +88,22 @@ function ShowFilters({ setShowList, setHasError }) {
                         }
                     </Select>
                 </FormControl>
-                {stateCode && <FormControl sx={{ m: 1, minWidth: 160 }}>
-                    <Autocomplete
-                        disablePortal
-                        id="city-list"
-                        options={cityList}
-                        sx={{ width: 300 }}
-                        renderInput={(params) => <TextField {...params} label="City" />}
-                        value={city}
-                        onChange={handleCityChange}
-                        isOptionEqualToValue={(city, value) => city.value === value.value}
-                    />
-                </FormControl>}
+                {stateCode &&
+                    <div>
+                        <FormControl sx={{ m: 1, minWidth: 160 }}>
+                            <Autocomplete
+                                disablePortal
+                                id="city-list"
+                                options={cityList}
+                                sx={{ width: 300 }}
+                                renderInput={(params) => <TextField {...params} label="City" />}
+                                value={city}
+                                onChange={handleCityChange}
+                                isOptionEqualToValue={(city, value) => city.value === value.value}
+                            />
+                        </FormControl>
+                        <Button underline="none" component="button" color="inherit" onClick={handleClearSearchFilters}>Clear filters</Button>
+                    </div>}
             </Box>
         </>
     )

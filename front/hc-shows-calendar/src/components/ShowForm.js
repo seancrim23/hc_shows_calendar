@@ -192,6 +192,9 @@ export async function action({ request, params }) {
     const method = request.method;
     const data = await request.formData();
 
+    //TODO need to grab the username of the promoter who is creating the show from cookies
+    const tempPromoter = "cooltestpromoter123"
+
     const showData = {
         date: dayjs(Object.fromEntries(data).date),
         time: dayjs(Object.fromEntries(data).time),
@@ -199,7 +202,8 @@ export async function action({ request, params }) {
         address: Object.fromEntries(data).address,
         state: Object.fromEntries(data).state,
         city: Object.fromEntries(data).city,
-        lineup: (Object.fromEntries(data).lineup).split(',')
+        lineup: (Object.fromEntries(data).lineup).split(','),
+        promoter: tempPromoter,
     }
 
     let url = process.env.REACT_APP_BACK_URL + '/show';
@@ -229,5 +233,5 @@ export async function action({ request, params }) {
         throw json({ message: 'Could not save show!' }, { status: 500 });
     }
 
-    return redirect('/');
+    return redirect('/user/shows');
 }

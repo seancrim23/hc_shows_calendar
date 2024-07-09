@@ -4,9 +4,7 @@ import { Suspense } from "react";
 
 function EditShowPage() {
     const { show } = useRouteLoaderData('show-detail');
-    console.log(JSON.stringify(show));
-    //load show id info
-    //const show = {}
+
     return (
         <div>
             <ShowForm method='PUT' show={show} />
