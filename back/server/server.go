@@ -23,14 +23,16 @@ import (
 //WHAT ERROR CODES FIT FOR WHAT ENDPOINTS
 
 type HCShowCalendarServer struct {
-	service services.HCShowCalendarService
+	service      services.HCShowCalendarService
+	emailService services.HCShowCalendarEmailService
 	http.Handler
 }
 
-func NewHCShowCalendarServer(service services.HCShowCalendarService) (*HCShowCalendarServer, error) {
+func NewHCShowCalendarServer(service services.HCShowCalendarService, emailService services.HCShowCalendarEmailService) (*HCShowCalendarServer, error) {
 	h := new(HCShowCalendarServer)
 
 	h.service = service
+	h.emailService = emailService
 
 	r := mux.NewRouter()
 	r.HandleFunc("/health", h.healthCheck).Methods("GET")

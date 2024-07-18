@@ -17,7 +17,9 @@ func main() {
 	}
 	defer close()
 
-	s, err := server.NewHCShowCalendarServer(firestoreService)
+	gomailEmailService := services.NewGomailHcShowCalendarEmailService()
+
+	s, err := server.NewHCShowCalendarServer(firestoreService, gomailEmailService)
 
 	if err != nil {
 		log.Fatal(err)
