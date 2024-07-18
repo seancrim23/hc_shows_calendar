@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"hc_shows_backend/models"
 	"hc_shows_backend/services"
@@ -44,6 +45,8 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	r.HandleFunc("/show/{id}", h.deleteShow).Methods("DELETE") //token
 
 	r.HandleFunc("/auth", h.authUser).Methods("POST")
+	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST") //token - admin only
+	//r.HandleFunc("/auth/reset", h.authReset).Methods("POST") //token
 
 	r.HandleFunc("/user", h.createUser).Methods("POST") //token
 	r.HandleFunc("/user/{id}", h.getUser).Methods("GET")
@@ -262,6 +265,63 @@ func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
+	utils.RespondWithJSON(w, code, map[string]string{"token": t})
+}
+
+func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var code = 200
+	var err error
+	var email string
+
+	//should contain an email to setup the auth for
+	//should create the verification object and store in the db
+	//should send the account setup email
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+	err = json.Unmarshal(reqBody, &email)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	code := utils.GenerateRandomString(8)
+	verification := &models.Verification{
+		Email:     email,
+		Code:      code,
+		Type:      services.MailConfirmation,
+		ExpiresAt: time.Now().Add(time.Hour * time.Duration(24)),
+	}
+	ao, err := h.service.CreateAuthObject(verification)
+	if err != nil {
+		code = 500
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	from := utils.MY_EMAIL
+	to := []string{email}
+	subject := "Email Verification for HC Shows Calendar"
+	mailType := services.MailConfirmation
+	mailData := &services.MailData{
+		Email: email,
+		Code:  code,
+	}
+	//should create an email for the particular type and then send
+	mailReq := h.emailService.NewMail(from, to, subject, mailType, mailData)
+	err = h.emailService.SendMail(mailReq)
+	if err != nil {
+		code = 500
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
 	utils.RespondWithJSON(w, code, map[string]string{"token": t})
 }
 
