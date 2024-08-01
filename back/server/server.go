@@ -261,6 +261,14 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	//delete the validation object
+	err = h.service.DeleteAuthObject(user.Email)
+	if err != nil {
+		code = 500
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
 	utils.RespondWithJSON(w, code, u)
 }
 

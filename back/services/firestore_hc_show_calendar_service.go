@@ -333,11 +333,12 @@ func (f *FirestoreHCShowCalendarService) ValidateCreateUser(email string, code s
 		fmt.Println(err)
 		return errors.New("error getting verification")
 	}
-	fmt.Printf("verification data: %#v\n", v)
 	if (code != v.Code) || time.Now().After(v.ExpiresAt) {
 		fmt.Println("invalid verification")
+		return errors.New("invalid verification")
+	}
+	if time.Now().After(v.ExpiresAt) {
 		err := f.DeleteAuthObject(email)
-		//do i really need this error?
 		if err != nil {
 			fmt.Println("error deleting validation object")
 			return errors.New("invalid verification")
