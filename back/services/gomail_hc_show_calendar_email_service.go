@@ -91,6 +91,6 @@ func buildEmailBody(templatePath string, mailData MailData) (string, error) {
 }
 
 var mailTemplateLocations = map[MailType]string{
-	MailConfirmation: "./templates/confirm_mail.html",
-	PassReset:        "./templates/password_reset.html",
+	MailConfirmation: "C:/development/hc_shows_calendar/back/templates/confirm_mail.html",
+	PassReset:        "C:/development/hc_shows_calendar/back/templates/password_reset.html",
 }

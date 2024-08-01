@@ -212,11 +212,15 @@ func (h *HCShowCalendarServer) deleteShow(w http.ResponseWriter, r *http.Request
 	utils.RespondWithJSON(w, code, response)
 }
 
+// any create user call should have the verification code on it...
+// get user info
+// get code
 func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var code = 201
 	var err error
 	var user models.User
+	var verification models.Verification
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -227,6 +231,25 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 	err = json.Unmarshal(reqBody, &user)
 	if err != nil {
 		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+	//unpack verification code
+	//i think easier to just throw code into verification object
+	//TODO think of a better way to do this
+	//for now i think its ok to not make middleware
+	err = json.Unmarshal(reqBody, &verification)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	//validate the user actually has validity to create
+	err = h.service.ValidateCreateUser(user.Email, verification.Code)
+	if err != nil {
+		code = 400
+		fmt.Println("user cannot be created...")
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
@@ -270,9 +293,9 @@ func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) 
 
 func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var code = 200
+	var code = 201
 	var err error
-	var email string
+	var v models.Verification
 
 	//should contain an email to setup the auth for
 	//should create the verification object and store in the db
@@ -284,21 +307,19 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
-	err = json.Unmarshal(reqBody, &email)
+	err = json.Unmarshal(reqBody, &v)
 	if err != nil {
 		code = 400
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
 
-	code := utils.GenerateRandomString(8)
-	verification := &models.Verification{
-		Email:     email,
-		Code:      code,
-		Type:      services.MailConfirmation,
-		ExpiresAt: time.Now().Add(time.Hour * time.Duration(24)),
-	}
-	ao, err := h.service.CreateAuthObject(verification)
+	verificationCode := utils.GenerateRandomString(8)
+	v.Code = verificationCode
+	v.Type = models.MailConfirmation
+	v.ExpiresAt = time.Now().Add(time.Hour * time.Duration(24))
+
+	err = h.service.CreateAuthObject(&v)
 	if err != nil {
 		code = 500
 		utils.RespondWithError(w, code, err.Error())
@@ -306,12 +327,12 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 	}
 
 	from := utils.MY_EMAIL
-	to := []string{email}
+	to := []string{v.Email}
 	subject := "Email Verification for HC Shows Calendar"
 	mailType := services.MailConfirmation
 	mailData := &services.MailData{
-		Email: email,
-		Code:  code,
+		Email: v.Email,
+		Code:  verificationCode,
 	}
 	//should create an email for the particular type and then send
 	mailReq := h.emailService.NewMail(from, to, subject, mailType, mailData)
@@ -322,7 +343,7 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	utils.RespondWithJSON(w, code, map[string]string{"token": t})
+	utils.RespondWithJSON(w, code, map[string]string{"response": "created"})
 }
 
 // do i need to expand this to search by username?

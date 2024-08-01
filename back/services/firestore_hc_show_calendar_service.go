@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"hc_shows_backend/models"
 	"hc_shows_backend/utils"
@@ -296,4 +297,53 @@ func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, err
 	}
 
 	return t, nil
+}
+
+func (f *FirestoreHCShowCalendarService) CreateAuthObject(verification *models.Verification) error {
+	_, err := f.database.Collection(utils.VERIFICATION_COLLECTION).Doc(verification.Email).Set(f.ctx, verification)
+	if err != nil {
+		fmt.Println("some sort of error building the add query from firestore")
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (f *FirestoreHCShowCalendarService) DeleteAuthObject(email string) error {
+	_, err := f.database.Collection(utils.VERIFICATION_COLLECTION).Doc(email).Delete(f.ctx)
+	if err != nil {
+		fmt.Println("error deleting verification object")
+		fmt.Println(err)
+		return errors.New("error deleting verification object")
+	}
+	return nil
+}
+
+func (f *FirestoreHCShowCalendarService) ValidateCreateUser(email string, code string) error {
+	//get verification object
+	dsnap, err := f.database.Collection(utils.VERIFICATION_COLLECTION).Doc(email).Get(f.ctx)
+	if err != nil {
+		fmt.Println("error getting verification")
+		fmt.Println(err)
+		return errors.New("error getting verification")
+	}
+	var v models.Verification
+	err = dsnap.DataTo(&v)
+	if err != nil {
+		fmt.Println(err)
+		return errors.New("error getting verification")
+	}
+	fmt.Printf("verification data: %#v\n", v)
+	if (code != v.Code) || time.Now().After(v.ExpiresAt) {
+		fmt.Println("invalid verification")
+		err := f.DeleteAuthObject(email)
+		//do i really need this error?
+		if err != nil {
+			fmt.Println("error deleting validation object")
+			return errors.New("invalid verification")
+		}
+		return errors.New("invalid verification")
+	}
+
+	return nil
 }

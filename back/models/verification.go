@@ -11,8 +11,8 @@ const (
 
 // verification holds the verification info for a user creating their account
 type Verification struct {
-	Email     string
-	Code      string
-	ExpiresAt time.Time
-	Type      VerificationDataType
+	Email     string               `json:"email"`
+	Code      string               `json:"code"`
+	ExpiresAt time.Time            `json:"expiresAt"`
+	Type      VerificationDataType `json:"type"`
 }

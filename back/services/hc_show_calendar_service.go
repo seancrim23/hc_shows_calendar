@@ -21,4 +21,6 @@ type HCShowCalendarService interface {
 	DeleteUser(string) error
 
 	AuthUser(models.User) (string, error)
+	CreateAuthObject(*models.Verification) error
+	ValidateCreateUser(string, string) error
 }

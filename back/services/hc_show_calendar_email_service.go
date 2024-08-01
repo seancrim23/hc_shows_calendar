@@ -10,7 +10,7 @@ import (
 // send email
 // what else should i be able to do?
 type HCShowCalendarEmailService interface {
-	CreateMail(mailReq *Mail) *gomail.Message
+	CreateMail(mailReq *Mail) (*gomail.Message, error)
 	SendMail(mailReq *Mail) error
 	NewMail(from string, to []string, subject string, mailType MailType, data *MailData) *Mail
 }

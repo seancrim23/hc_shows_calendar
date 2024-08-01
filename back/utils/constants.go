@@ -2,6 +2,7 @@ package utils
 
 const SHOW_COLLECTION = "show"
 const USER_COLLECTION = "user"
+const VERIFICATION_COLLECTION = "verification"
 
 const APPLICATION_PORT = "APPLICATION_PORT"
 const SITE_KEY = "SITE_KEY"
