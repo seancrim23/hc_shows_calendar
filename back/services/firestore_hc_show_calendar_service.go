@@ -246,6 +246,24 @@ func buildUserFirestoreUpdateData(user models.User) []firestore.Update {
 	return fireStoreUpdates
 }
 
+func (f *FirestoreHCShowCalendarService) ResetPassword(id string, password string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		fmt.Println("error generating password hash")
+		fmt.Println(err)
+		return err
+	}
+
+	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(id).Update(f.ctx, []firestore.Update{{Path: "pass", Value: string(hashedPassword)}})
+	if err != nil {
+		fmt.Println("error updating user")
+		fmt.Println(err)
+		return errors.New("error updating user")
+	}
+
+	return nil
+}
+
 func (f *FirestoreHCShowCalendarService) DeleteUser(id string) error {
 	fmt.Println("deleting user with id... " + id)
 	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Delete(f.ctx)
@@ -319,7 +337,7 @@ func (f *FirestoreHCShowCalendarService) DeleteAuthObject(email string) error {
 	return nil
 }
 
-func (f *FirestoreHCShowCalendarService) ValidateCreateUser(email string, code string) error {
+func (f *FirestoreHCShowCalendarService) ValidateAuthUser(email string, code string) error {
 	//get verification object
 	dsnap, err := f.database.Collection(utils.VERIFICATION_COLLECTION).Doc(email).Get(f.ctx)
 	if err != nil {

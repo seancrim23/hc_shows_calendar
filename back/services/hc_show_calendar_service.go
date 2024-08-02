@@ -20,8 +20,10 @@ type HCShowCalendarService interface {
 	UpdateUser(string, models.User) (*models.User, error)
 	DeleteUser(string) error
 
+	ResetPassword(string, string) error
+
 	AuthUser(models.User) (string, error)
 	CreateAuthObject(*models.Verification) error
 	DeleteAuthObject(string) error
-	ValidateCreateUser(string, string) error
+	ValidateAuthUser(string, string) error
 }

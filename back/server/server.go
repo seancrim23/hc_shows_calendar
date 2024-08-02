@@ -53,6 +53,8 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	r.HandleFunc("/user/{id}", h.updateUser).Methods("PUT")    // token
 	r.HandleFunc("/user/{id}", h.deleteUser).Methods("DELETE") //token
 
+	r.HandleFunc("/user/{id}/reset", h.resetUser).Methods("PUT")
+
 	fmt.Println(os.Getenv(utils.ALLOWED_ORIGINS))
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{os.Getenv(utils.ALLOWED_ORIGINS)},
@@ -246,7 +248,7 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 	}
 
 	//validate the user actually has validity to create
-	err = h.service.ValidateCreateUser(user.Email, verification.Code)
+	err = h.service.ValidateAuthUser(user.Email, verification.Code)
 	if err != nil {
 		code = 400
 		fmt.Println("user cannot be created...")
@@ -270,6 +272,71 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 	}
 
 	utils.RespondWithJSON(w, code, u)
+}
+
+func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var code = 201
+	var err error
+	var user models.User
+	var verification models.Verification
+
+	userId := mux.Vars(r)["id"]
+	//TODO perform input validation
+	if userId == "" {
+		code = 400
+		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
+		return
+	}
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+	err = json.Unmarshal(reqBody, &user)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+	//unpack verification code
+	//i think easier to just throw code into verification object
+	//TODO think of a better way to do this
+	//for now i think its ok to not make middleware
+	err = json.Unmarshal(reqBody, &verification)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	//validate the user actually has validity to reset
+	err = h.service.ValidateAuthUser(user.Email, verification.Code)
+	if err != nil {
+		code = 400
+		fmt.Println("user cannot reset password...")
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	err = h.service.ResetPassword(userId, user.Pass)
+	if err != nil {
+		code = 500
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	//delete the validation object
+	err = h.service.DeleteAuthObject(user.Email)
+	if err != nil {
+		code = 500
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, code, map[string]string{"response": "reset"})
 }
 
 func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) {
