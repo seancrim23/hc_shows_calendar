@@ -5,8 +5,8 @@ package models
 type User struct {
 	//username will be unique and serve as id
 	Username string `json:"username" firestore:"username"`
-	Hash     string `json:"hash" firestore:"hash"`
-	Email    string `json:"email" firestore:"email"`
-	//using this as a helper - should never actually exist in a db
-	Pass string `json:"pass" firestore:"pass,omitempty"`
+	//Hash     string `json:"hash" firestore:"hash"`
+	Email string `json:"email" firestore:"email"`
+	//plain text should never exist in a DB
+	Password string `json:"password" firestore:"password,omitempty"`
 }

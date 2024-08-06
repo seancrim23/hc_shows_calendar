@@ -173,9 +173,9 @@ func (f *FirestoreHCShowCalendarService) DeleteShow(id string) error {
 	return nil
 }
 
-func (f *FirestoreHCShowCalendarService) GetUser(id string) (*models.User, error) {
-	fmt.Println("getting user with id " + id)
-	dsnap, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Get(f.ctx)
+func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User, error) {
+	fmt.Println("getting user with id " + username)
+	dsnap, err := f.database.Collection(utils.USER_COLLECTION).Doc(username).Get(f.ctx)
 	if err != nil {
 		fmt.Println("error getting user")
 		fmt.Println(err)
@@ -193,20 +193,14 @@ func (f *FirestoreHCShowCalendarService) GetUser(id string) (*models.User, error
 
 // TODO GENERATE A TOKEN FOR A USER
 func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.User, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Pass), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println("error generating password hash")
 		fmt.Println(err)
 		return nil, err
 	}
-	//not sure if this is a weird way to do it
-	//but will guarantee no possible plain text pass in db
-	/*userId := user.Id
-	if userId == "" {
-		newUserId := uuid.New()
-		userId = newUserId.String()
-	}*/
-	u := models.User{Username: user.Username, Hash: string(hashedPassword), Email: user.Email}
+
+	u := models.User{Username: user.Username, Password: string(hashedPassword), Email: user.Email}
 	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(u.Username).Set(f.ctx, u)
 	if err != nil {
 		fmt.Println("some sort of error building the add query from firestore")
@@ -216,10 +210,10 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 	return &user, nil
 }
 
-func (f *FirestoreHCShowCalendarService) UpdateUser(id string, user models.User) (*models.User, error) {
-	fmt.Println("updating values for user " + id)
+func (f *FirestoreHCShowCalendarService) UpdateUser(username string, user models.User) (*models.User, error) {
+	fmt.Println("updating values for user " + username)
 	userFirestoreUpdateData := buildUserFirestoreUpdateData(user)
-	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Update(f.ctx, userFirestoreUpdateData)
+	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(username).Update(f.ctx, userFirestoreUpdateData)
 	if err != nil {
 		fmt.Println("error updating user")
 		fmt.Println(err)
@@ -239,14 +233,14 @@ func buildUserFirestoreUpdateData(user models.User) []firestore.Update {
 	userTempGenericMap := structs.Map(user)
 	for i, v := range userTempGenericMap {
 		//maybe add more protection to this?
-		if strings.ToLower(i) != "id" && strings.ToLower(i) != "hash" && strings.ToLower(i) != "pass" {
+		if strings.ToLower(i) != "id" && strings.ToLower(i) != "hash" && strings.ToLower(i) != "password" {
 			fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
 		}
 	}
 	return fireStoreUpdates
 }
 
-func (f *FirestoreHCShowCalendarService) ResetPassword(id string, password string) error {
+func (f *FirestoreHCShowCalendarService) ResetPassword(email string, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println("error generating password hash")
@@ -254,7 +248,29 @@ func (f *FirestoreHCShowCalendarService) ResetPassword(id string, password strin
 		return err
 	}
 
-	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(id).Update(f.ctx, []firestore.Update{{Path: "pass", Value: string(hashedPassword)}})
+	var u models.User
+	iter := f.database.Collection(utils.USER_COLLECTION).Where("email", "==", email).Documents(f.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		err = doc.DataTo(&u)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+	if u.Username == "" {
+		fmt.Println("user does not exist")
+		return errors.New("user does not exist")
+	}
+
+	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(u.Username).Update(f.ctx, []firestore.Update{{Path: "password", Value: string(hashedPassword)}})
 	if err != nil {
 		fmt.Println("error updating user")
 		fmt.Println(err)
@@ -264,42 +280,33 @@ func (f *FirestoreHCShowCalendarService) ResetPassword(id string, password strin
 	return nil
 }
 
-func (f *FirestoreHCShowCalendarService) DeleteUser(id string) error {
-	fmt.Println("deleting user with id... " + id)
-	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(id).Delete(f.ctx)
+func (f *FirestoreHCShowCalendarService) DeleteUser(username string) error {
+	fmt.Println("deleting user with id... " + username)
+	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(username).Delete(f.ctx)
 	if err != nil {
 		fmt.Println("error deleting user")
 		fmt.Println(err)
 		return errors.New("error deleting user")
 	}
-	fmt.Println("successful delete of id: " + id)
+	fmt.Println("successful delete of id: " + username)
 	return nil
 }
 
 func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, error) {
 	var u models.User
-	iter := f.database.Collection(utils.USER_COLLECTION).Where("username", "==", user.Username).Documents(f.ctx)
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			fmt.Println(err)
-			return "", err
-		}
-		err = doc.DataTo(&u)
-		if err != nil {
-			fmt.Println(err)
-			return "", err
-		}
+	dsnap, err := f.database.Collection(utils.USER_COLLECTION).Doc(user.Username).Get(f.ctx)
+	if err != nil {
+		fmt.Println("error getting user")
+		fmt.Println(err)
+		return "", errors.New("error getting user")
 	}
-	if u.Username == "" {
-		fmt.Println("user does not exist")
-		return "", errors.New("failed login")
+	err = dsnap.DataTo(&u)
+	if err != nil {
+		fmt.Println(err)
+		return "", errors.New("error getting user")
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(user.Pass))
+	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(user.Password))
 	if err != nil {
 		//probably dont want this to tell too much
 		fmt.Println("password does not match")

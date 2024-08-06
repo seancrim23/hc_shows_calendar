@@ -321,7 +321,7 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = h.service.ResetPassword(userId, user.Pass)
+	err = h.service.ResetPassword(user.Email, user.Password)
 	if err != nil {
 		code = 500
 		utils.RespondWithError(w, code, err.Error())
