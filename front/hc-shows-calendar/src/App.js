@@ -8,7 +8,11 @@ import NewShowPage from './pages/NewShow';
 import EditShowPage from './pages/EditShow';
 import UserDetailPage, { loader as userDetailLoader} from './pages/UserDetail';
 import UserShowListPage, { loader as userShowListLoader } from './pages/UserShowList';
+import EmailResetAuthPage from './pages/EmailResetAuth';
+import ResetAuthPage from './pages/ResetAuth';
 import { action as authorizeAction } from './components/AuthForm';
+import { action as sendAdminEmailAction } from './components/UserAdminForm';
+import { action as resetAuthAction } from './components/AuthResetForm';
 import AuthPage from './pages/Auth';
 
 //TODO add auth loader
@@ -23,6 +27,11 @@ const router = createBrowserRouter([
         path: 'login',
         element: <AuthPage />,
         action: authorizeAction,
+      },
+      {
+        path: 'reset',
+        element: <EmailResetAuthPage />,
+        action: sendAdminEmailAction,
       },
       {
         path: 'shows',
@@ -67,6 +76,11 @@ const router = createBrowserRouter([
         loader: userShowListLoader,
         id: 'user-show-list',
         element: <UserShowListPage />,
+      },
+      {
+        path: 'user/reset',
+        element: <ResetAuthPage />,
+        action: resetAuthAction,
       }
     ]
   }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,12 +13,23 @@ import (
 
 var SECRET_KEY = []byte(os.Getenv(SITE_KEY))
 
+type UserIDKey struct{}
+
+// TODO modify to support various token types
+type TokenCustomClaims struct {
+	Username string
+	jwt.StandardClaims
+}
+
 func GenerateToken(userName string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"username": userName,
-			"exp":      time.Now().Add(time.Hour * 24).Unix(),
-		})
+	claims := TokenCustomClaims{
+		userName,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString(SECRET_KEY)
 	if err != nil {
@@ -35,27 +47,33 @@ func WithToken(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		splitAuth := strings.Fields(authString)
-		_, err := validateToken(splitAuth[1])
+		u, err := validateToken(splitAuth[1])
 		if err != nil {
 			RespondWithError(w, 400, err.Error())
 			return
 		}
+		//add username to context for use in next
+		fmt.Println(u)
+		ctx := context.WithValue(r.Context(), UserIDKey{}, u)
+		r = r.WithContext(ctx)
+
 		next(w, r)
 	}
 }
 
-func validateToken(tokenString string) (interface{}, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func validateToken(tokenString string) (string, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &TokenCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return SECRET_KEY, nil
 	})
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+	claims, ok := token.Claims.(*TokenCustomClaims)
+	if !ok || !token.Valid || claims.Username == "" {
+		return "", fmt.Errorf("invalid token")
 	}
 
-	return token, nil
+	return claims.Username, nil
 }

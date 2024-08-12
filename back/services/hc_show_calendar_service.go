@@ -11,7 +11,7 @@ type HCShowCalendarService interface {
 	//TODO add pagination (if needed) which should contain a member to hold the query filters
 	GetShows(map[string]string) (*[]models.Show, error)
 	GetShow(string) (*models.Show, error)
-	CreateShow(models.Show) (*models.Show, error)
+	CreateShow(models.Show, string) (*models.Show, error)
 	UpdateShow(string, models.Show) (*models.Show, error)
 	DeleteShow(string) error
 

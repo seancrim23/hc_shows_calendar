@@ -38,22 +38,28 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	r := mux.NewRouter()
 	r.HandleFunc("/health", h.healthCheck).Methods("GET")
 
+	//TODO any way to make these endpoints more clean?
+	//users who are validated should only be able to do create update and delete
 	r.HandleFunc("/show", h.getShows).Methods("GET")
-	r.HandleFunc("/show", h.createShow).Methods("POST") //token
+	r.HandleFunc("/show", utils.WithToken(h.createShow)).Methods("POST") //token
 	r.HandleFunc("/show/{id}", h.getShow).Methods("GET")
-	r.HandleFunc("/show/{id}", h.updateShow).Methods("PUT")    //token
-	r.HandleFunc("/show/{id}", h.deleteShow).Methods("DELETE") //token
+	r.HandleFunc("/show/{id}", utils.WithToken(h.updateShow)).Methods("PUT")    //token
+	r.HandleFunc("/show/{id}", utils.WithToken(h.deleteShow)).Methods("DELETE") //token
 
 	r.HandleFunc("/auth", h.authUser).Methods("POST")
 	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST") //token - admin only
 	r.HandleFunc("/auth/reset", h.authReset).Methods("POST") //token
 
-	r.HandleFunc("/user", h.createUser).Methods("POST") //token
-	r.HandleFunc("/user/{id}", h.getUser).Methods("GET")
-	r.HandleFunc("/user/{id}", h.updateUser).Methods("PUT")    // token
-	r.HandleFunc("/user/{id}", h.deleteUser).Methods("DELETE") //token
+	//for these user should only be able to do these to themselves...
+	//"WithVerification" ??? should only be able to create user if verification exists for the user
+	r.HandleFunc("/user", utils.WithToken(h.createUser)).Methods("POST")   //token
+	r.HandleFunc("/user", utils.WithToken(h.getUser)).Methods("GET")       //token
+	r.HandleFunc("/user", utils.WithToken(h.updateUser)).Methods("PUT")    // token
+	r.HandleFunc("/user", utils.WithToken(h.deleteUser)).Methods("DELETE") //token
 
-	r.HandleFunc("/user/{id}/reset", h.resetUser).Methods("PUT")
+	//TODO TOKEN PROTECT
+	//UPDATE RESET USER TO TAKE USER ID FROM CONTEXT AND USE TO UPDATE PASSWORD
+	r.HandleFunc("/user/reset", h.resetUser).Methods("PUT")
 
 	fmt.Println(os.Getenv(utils.ALLOWED_ORIGINS))
 	handler := cors.New(cors.Options{
@@ -121,11 +127,20 @@ func (h *HCShowCalendarServer) getShows(w http.ResponseWriter, r *http.Request) 
 	utils.RespondWithJSON(w, code, shows)
 }
 
+// user needs to be validated and username should get passed to show that is created
 func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var code = 201
 	var err error
 	var show models.Show
+
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
+		code = 400
+		fmt.Println("no user id provided")
+		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
+		return
+	}
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -143,7 +158,7 @@ func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	s, err := h.service.CreateShow(show)
+	s, err := h.service.CreateShow(show, userID)
 	if err != nil {
 		code = 500
 		fmt.Println(err)
@@ -154,6 +169,7 @@ func (h *HCShowCalendarServer) createShow(w http.ResponseWriter, r *http.Request
 	utils.RespondWithJSON(w, code, s)
 }
 
+// TODO add validation so logged in promoter can only change their own shows?
 func (h *HCShowCalendarServer) updateShow(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var code = 200
@@ -191,6 +207,7 @@ func (h *HCShowCalendarServer) updateShow(w http.ResponseWriter, r *http.Request
 	utils.RespondWithJSON(w, code, s)
 }
 
+// TODO add validation so logged in promoter can only change their own shows?
 func (h *HCShowCalendarServer) deleteShow(w http.ResponseWriter, r *http.Request) {
 	var response interface{}
 	var code = 200
@@ -281,13 +298,21 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 	var user models.User
 	var verification models.Verification
 
-	userId := mux.Vars(r)["id"]
-	//TODO perform input validation
-	if userId == "" {
+	//userid needs to come from the context instead of being exposed on the url
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
 		code = 400
+		fmt.Println("no user id provided")
 		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
 		return
 	}
+	//userId := mux.Vars(r)["id"]
+	//TODO perform input validation
+	/*if userId == "" {
+		code = 400
+		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
+		return
+	}*/
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -366,6 +391,7 @@ func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) 
 	utils.RespondWithJSON(w, code, map[string]string{"token": t})
 }
 
+// TODO add some sort of admin token? like admin is only one allowed to do this?
 func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var code = 201
@@ -483,15 +509,16 @@ func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
 	var code = 200
 	var err error
 
-	userId := mux.Vars(r)["id"]
-	//TODO perform input validation
-	if userId == "" {
+	//userid come from the context instead of being exposed on the url
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
 		code = 400
+		fmt.Println("no user id provided")
 		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
 		return
 	}
 
-	user, err := h.service.GetUser(userId)
+	user, err := h.service.GetUser(userID)
 	//determine what type of error and change code and return according error message
 	if err != nil {
 		code = 500
@@ -526,15 +553,16 @@ func (h *HCShowCalendarServer) updateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userId := mux.Vars(r)["id"]
-	//perform input validation
-	if userId == "" {
+	//userid come from the context instead of being exposed on the url
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
 		code = 400
+		fmt.Println("no user id provided")
 		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
 		return
 	}
 
-	u, err := h.service.UpdateUser(userId, user)
+	u, err := h.service.UpdateUser(userID, user)
 	if err != nil {
 		code = 500
 		utils.RespondWithError(w, code, err.Error())
@@ -549,15 +577,16 @@ func (h *HCShowCalendarServer) deleteUser(w http.ResponseWriter, r *http.Request
 	var code = 200
 	var err error
 
-	userId := mux.Vars(r)["id"]
-	//perform input validation
-	if userId == "" {
+	//userid come from the context instead of being exposed on the url
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
 		code = 400
+		fmt.Println("no user id provided")
 		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
 		return
 	}
 
-	err = h.service.DeleteUser(userId)
+	err = h.service.DeleteUser(userID)
 	if err != nil {
 		code = 500
 		utils.RespondWithError(w, code, err.Error())

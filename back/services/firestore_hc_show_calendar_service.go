@@ -115,12 +115,12 @@ func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error
 	return &s, nil
 }
 
-func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show) (*models.Show, error) {
-	//don't think this will be a problem...
+func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show, username string) (*models.Show, error) {
 	if show.Id == "" {
 		newShowId := uuid.New()
 		show.Id = newShowId.String()
 	}
+	show.Promoter = username
 	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(show.Id).Set(f.ctx, show)
 	if err != nil {
 		fmt.Println("error creating show")
