@@ -187,7 +187,7 @@ func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User,
 		fmt.Println(err)
 		return nil, errors.New("error getting user")
 	}
-	fmt.Printf("Document data: %#v\n", u)
+	u.Password = ""
 	return &u, nil
 }
 
@@ -210,6 +210,7 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 	return &user, nil
 }
 
+// for an update we're assuming the entire user object is coming from front end
 func (f *FirestoreHCShowCalendarService) UpdateUser(username string, user models.User) (*models.User, error) {
 	fmt.Println("updating values for user " + username)
 	userFirestoreUpdateData := buildUserFirestoreUpdateData(user)
@@ -233,7 +234,7 @@ func buildUserFirestoreUpdateData(user models.User) []firestore.Update {
 	userTempGenericMap := structs.Map(user)
 	for i, v := range userTempGenericMap {
 		//maybe add more protection to this?
-		if strings.ToLower(i) != "id" && strings.ToLower(i) != "hash" && strings.ToLower(i) != "password" {
+		if strings.ToLower(i) != "password" {
 			fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
 		}
 	}

@@ -47,8 +47,8 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	r.HandleFunc("/show/{id}", utils.WithToken(h.deleteShow)).Methods("DELETE") //token
 
 	r.HandleFunc("/auth", h.authUser).Methods("POST")
-	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST") //token - admin only
-	r.HandleFunc("/auth/reset", h.authReset).Methods("POST") //token
+	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST") //admin only, open to anyone in the future
+	r.HandleFunc("/auth/reset", h.authReset).Methods("POST")
 
 	//for these user should only be able to do these to themselves...
 	//"WithVerification" ??? should only be able to create user if verification exists for the user
@@ -209,7 +209,6 @@ func (h *HCShowCalendarServer) updateShow(w http.ResponseWriter, r *http.Request
 
 // TODO add validation so logged in promoter can only change their own shows?
 func (h *HCShowCalendarServer) deleteShow(w http.ResponseWriter, r *http.Request) {
-	var response interface{}
 	var code = 200
 	var err error
 
@@ -228,7 +227,7 @@ func (h *HCShowCalendarServer) deleteShow(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	utils.RespondWithJSON(w, code, response)
+	utils.RespondWithJSON(w, code, map[string]string{"response": "deleted"})
 }
 
 // any create user call should have the verification code on it...
@@ -299,13 +298,13 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 	var verification models.Verification
 
 	//userid needs to come from the context instead of being exposed on the url
-	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	/*userID := r.Context().Value(utils.UserIDKey{}).(string)
 	if userID == "" {
 		code = 400
 		fmt.Println("no user id provided")
 		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
 		return
-	}
+	}*/
 	//userId := mux.Vars(r)["id"]
 	//TODO perform input validation
 	/*if userId == "" {
