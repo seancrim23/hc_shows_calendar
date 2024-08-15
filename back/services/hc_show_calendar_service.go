@@ -16,6 +16,7 @@ type HCShowCalendarService interface {
 	DeleteShow(string) error
 
 	GetUser(string) (*models.User, error)
+	GetUserShows(string) (*models.Show, error)
 	CreateUser(models.User) (*models.User, error)
 	UpdateUser(string, models.User) (*models.User, error)
 	DeleteUser(string) error

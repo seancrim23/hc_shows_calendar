@@ -52,8 +52,9 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 
 	//for these user should only be able to do these to themselves...
 	//"WithVerification" ??? should only be able to create user if verification exists for the user
-	r.HandleFunc("/user", utils.WithToken(h.createUser)).Methods("POST")   //token
-	r.HandleFunc("/user", utils.WithToken(h.getUser)).Methods("GET")       //token
+	r.HandleFunc("/user", utils.WithToken(h.createUser)).Methods("POST") //token
+	r.HandleFunc("/user", utils.WithToken(h.getUser)).Methods("GET")     //token
+	r.HandleFunc("/user/shows", utils.WithToken(h.getUserShows)).Methods("GET")
 	r.HandleFunc("/user", utils.WithToken(h.updateUser)).Methods("PUT")    // token
 	r.HandleFunc("/user", utils.WithToken(h.deleteUser)).Methods("DELETE") //token
 
@@ -531,6 +532,30 @@ func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithJSON(w, code, user)
+}
+
+func (h *HCShowCalendarServer) getUserShows(w http.ResponseWriter, r *http.Request) {
+	var code = 200
+	var err error
+
+	//userid come from the context instead of being exposed on the url
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
+		code = 400
+		fmt.Println("no user id provided")
+		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
+		return
+	}
+
+	shows, err := h.service.GetUserShows(userID)
+	//TODO build out something to parse errors and deliver error codes
+	if err != nil {
+		code = 500
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, code, shows)
 }
 
 func (h *HCShowCalendarServer) updateUser(w http.ResponseWriter, r *http.Request) {

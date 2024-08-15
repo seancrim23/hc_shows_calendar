@@ -14,6 +14,7 @@ import { action as authorizeAction } from './components/AuthForm';
 import { action as sendAdminEmailAction } from './components/UserAdminForm';
 import { action as resetAuthAction } from './components/AuthResetForm';
 import AuthPage from './pages/Auth';
+import { tokenLoader, checkAuthLoader } from './util/auth';
 
 //TODO add auth loader
 const router = createBrowserRouter([
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <RootLayout />,
     id: 'root',
+    loader: tokenLoader,
     children: [
       { index: true, element: <HomePage /> },
       {
@@ -44,7 +46,8 @@ const router = createBrowserRouter([
           {
             path: 'new',
             element: <NewShowPage />,
-            action: manipulateShowAction
+            action: manipulateShowAction,
+            loader: checkAuthLoader
           },
           {
             path: ":id",
@@ -54,12 +57,14 @@ const router = createBrowserRouter([
               {
                 index: true,
                 element: <ShowDetailPage />,
-                action: deleteShowAction
+                action: deleteShowAction,
+                loader: checkAuthLoader
               },
               {
                 path: 'edit',
                 element: <EditShowPage />,
                 action: manipulateShowAction,
+                loader: checkAuthLoader
               }
             ]
           }

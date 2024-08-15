@@ -2,6 +2,7 @@ import ShowList from "../components/ShowList";
 import { Await, defer, json, useRouteLoaderData } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { Suspense } from "react";
+import { getAuthToken } from "../util/auth";
 
 function UserShowListPage() {
     const { showList } = useRouteLoaderData("user-show-list");
@@ -22,10 +23,18 @@ function UserShowListPage() {
 export default UserShowListPage;
 
 //loader to grab all of the shows that have been created by a user
-async function loadUserShowList(id) {
+async function loadUserShowList() {
     //TODO these need to be updated to build the url differently based on env
     //+ ":" + process.env.REACT_APP_BACK_PORT
-    const response = await fetch(process.env.REACT_APP_BACK_URL + "/show?promoter=" + encodeURIComponent(id));
+    const token = getAuthToken();
+    const url = process.env.REACT_APP_BACK_URL + "/user/shows"
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+      });
 
     if (!response.ok) {
         throw json({ message: "could not find shows for the user." }, { status: 500 });
@@ -35,15 +44,8 @@ async function loadUserShowList(id) {
     }
 }
 
-export async function loader({ params }) {
-    let id = params.id;
-
-    //hardcode for now
-    //TODO implement login and have loader pull id from cookies?
-    //id should only be available after successful login
-    id = "cooltestpromoter123"
-
+export async function loader() {
     return defer({
-        showList: await loadUserShowList(id)
+        showList: await loadUserShowList()
     });
 }

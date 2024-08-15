@@ -22,6 +22,10 @@ function AuthResetForm() {
           {Object.values(data.errors).map(err => <li key={err}>{err}</li>)}
         </ul>}
         <p>
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" name="email" required />
+        </p>
+        <p>
           <label htmlFor="password">Password</label>
           <input id="password" type="password" name="password" required />
         </p>
@@ -46,6 +50,7 @@ export async function action({ request, params }) {
     const data = await request.formData();
   
     const resetData = {
+      email: data.get('email'),
       password: data.get('password'),
       code: data.get('code'),
     };

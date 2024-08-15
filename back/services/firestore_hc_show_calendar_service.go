@@ -191,6 +191,31 @@ func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User,
 	return &u, nil
 }
 
+func (f *FirestoreHCShowCalendarService) GetUserShows(username string) (*[]models.Show, error) {
+	var shows []models.Show
+	var s models.Show
+	fmt.Println("getting shows promoted by id " + username)
+	iter := f.database.Collection(utils.SHOW_COLLECTION).Where("promoter", "==", username).Documents(f.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			fmt.Println("error iterating over results")
+			return nil, err
+		}
+		err = doc.DataTo(&s)
+		if err != nil {
+			fmt.Println("error getting all shows")
+			fmt.Println(err)
+			return nil, errors.New("error getting all shows")
+		}
+		shows = append(shows, s)
+	}
+	return &shows, nil
+}
+
 // TODO GENERATE A TOKEN FOR A USER
 func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
