@@ -6,6 +6,9 @@ import { getAuthToken } from "../util/auth";
 
 function UserShowListPage() {
     const { showList } = useRouteLoaderData("user-show-list");
+    const token = useRouteLoaderData('root');
+
+    const isPromoter = token !== "";
 
     return (
         <>
@@ -13,7 +16,7 @@ function UserShowListPage() {
             <Button underline="none" component="button" color="inherit" href={`/shows/new`}>Create New Show</Button>
             <Suspense fallback={<p>Loading...</p>}>
                 <Await resolve={showList}>
-                    {loadedShowList => <ShowList shows={loadedShowList} noShowsMessage={"No shows currently exist... add a show."} isPromoter={true} />}
+                    {loadedShowList => <ShowList shows={loadedShowList} noShowsMessage={"You haven't created any shows yet... add a show."} isPromoter={isPromoter} />}
                 </Await>
             </Suspense>
         </>

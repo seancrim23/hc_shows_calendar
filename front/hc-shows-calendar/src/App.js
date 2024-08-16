@@ -15,6 +15,7 @@ import { action as sendAdminEmailAction } from './components/UserAdminForm';
 import { action as resetAuthAction } from './components/AuthResetForm';
 import AuthPage from './pages/Auth';
 import { tokenLoader, checkAuthLoader } from './util/auth';
+import { action as logoutAction } from './pages/Logout';
 
 //TODO add auth loader
 const router = createBrowserRouter([
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
         action: authorizeAction,
       },
       {
+        path: 'logout',
+        action: logoutAction
+      },
+      {
         path: 'reset',
         element: <EmailResetAuthPage />,
         action: sendAdminEmailAction,
@@ -38,11 +43,6 @@ const router = createBrowserRouter([
       {
         path: 'shows',
         children: [
-          {
-            index: true,
-            element: <UserShowListPage />,
-            loader: userShowListLoader
-          },
           {
             path: 'new',
             element: <NewShowPage />,

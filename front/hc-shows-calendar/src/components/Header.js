@@ -1,16 +1,11 @@
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
 import hc_shows_calendar_logo from "../assets/hardcore_shows_calendar.png";
 import Grid from '@mui/material/Grid';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
-/*
-TODO:
-implement login and subscribe
-*/
-function Header() {
+
+function Header({ loggedIn }) {
   return (
     <Grid item xs={12}>
       <Box sx={{ flexGrow: 1, marginTop: 2 }}>
@@ -28,7 +23,13 @@ function Header() {
             marginTop: 0.5,
             marginBottom: 1,
           }} >
-            <Link href="/login" color="inherit" underline="hover">Login</Link>
+            {loggedIn ? <div>
+              <Link href="/user/profile" color="inherit" underline="hover">Profile</Link>
+              <Link href="/user/shows" color="inherit" underline="hover">Shows</Link>
+              <Link href="/logout" color="inherit" underline="hover">Logout</Link>
+            </div> : <div>
+              <Link href="/login" color="inherit" underline="hover">Login</Link>
+            </div>}
           </Breadcrumbs>
         </AppBar>
       </Box>

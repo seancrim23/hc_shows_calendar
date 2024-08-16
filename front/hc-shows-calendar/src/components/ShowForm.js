@@ -18,9 +18,9 @@ import { REQUIRED_FIELD } from '../util/Constants';
 import statesMapping from '../assets/StatesMapping.json';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { getAuthToken } from '../util/auth';
 
 
-//add validation
 function ShowForm({ method, show }) {
     const submit = useSubmit();
     const showSubmitMethod = method === 'PUT' ? 'Edit' : 'Create';
@@ -32,16 +32,6 @@ function ShowForm({ method, show }) {
         city: Yup.string().required(REQUIRED_FIELD),
         lineup: Yup.array(Yup.string().required(REQUIRED_FIELD)).min(1),
     })
-
-    /*show = {
-        date: '1/1/2000',
-        time: dayjs().format('MM/DD/YYYY') + ' 08:00 PM',
-        venue: 'some venue',
-        address: '123 some venue',
-        state: 'MD',
-        city: "cool city",
-        lineup: ["band 1", "band 2", "band 3", "band 4"]
-    }*/
 
     return (
         <Card sx={{ marginTop: 1.5, marginBottom: 1.5 }}>
@@ -192,9 +182,6 @@ export async function action({ request, params }) {
     const method = request.method;
     const data = await request.formData();
 
-    //TODO need to grab the username of the promoter who is creating the show from cookies
-    const tempPromoter = "cooltestpromoter123"
-
     const showData = {
         date: dayjs(Object.fromEntries(data).date),
         time: dayjs(Object.fromEntries(data).time),
@@ -203,7 +190,6 @@ export async function action({ request, params }) {
         state: Object.fromEntries(data).state,
         city: Object.fromEntries(data).city,
         lineup: (Object.fromEntries(data).lineup).split(','),
-        promoter: tempPromoter,
     }
 
     let url = process.env.REACT_APP_BACK_URL + '/show';
@@ -213,14 +199,13 @@ export async function action({ request, params }) {
         url = url + '/' + showId;
     }
 
-    //TODO implement token
-    //const token = getAuthToken();
+    const token = getAuthToken();
 
     const response = await fetch(url, {
         method: method,
         headers: {
             'Content-Type': 'application/json',
-            //'Authorization': 'Bearer ' + token TODO: IMPLEMENT TOKEN
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(showData),
     });

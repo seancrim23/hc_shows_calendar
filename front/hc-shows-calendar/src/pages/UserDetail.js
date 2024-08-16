@@ -5,11 +5,14 @@ import { getAuthToken } from "../util/auth";
 
 function UserDetailPage() {
     const { user } = useRouteLoaderData("user-detail");
+    const token = useRouteLoaderData('root');
+
+    const isPromoter = token !== "";
 
     return (
         <Suspense fallback={<p>Loading...</p>}>
             <Await resolve={user}>
-                {loadedUser => <User user={loadedUser} />}
+                {loadedUser => <User user={loadedUser} isPromoter={isPromoter} />}
             </Await>
         </Suspense>
     )
@@ -36,7 +39,6 @@ async function loadUserDetail() {
     }
 }
 
-//should have to pull the id from cookies after user login
 export async function loader() {
     return defer({
         user: await loadUserDetail()

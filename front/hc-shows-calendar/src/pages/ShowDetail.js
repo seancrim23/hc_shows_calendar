@@ -4,11 +4,14 @@ import Show from "../components/Show";
 
 function ShowDetailPage() {
     const { show } = useRouteLoaderData("show-detail");
+    const token = useRouteLoaderData('root');
+
+    const canEdit = token !== "";
 
     return (
         <Suspense fallback={<p>Loading...</p>}>
             <Await resolve={show}>
-                {loadedShow => <Show show={loadedShow} />}
+                {loadedShow => <Show show={loadedShow} canEdit={canEdit}/>}
             </Await>
         </Suspense>
     )
