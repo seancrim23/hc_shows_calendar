@@ -8,8 +8,10 @@ function UserShowListPage() {
     const { showList } = useRouteLoaderData("user-show-list");
     const token = useRouteLoaderData('root');
 
-    const isPromoter = token !== "";
+    const isPromoter = token !== null;
 
+    //TODO separate shows into upcoming and past
+    //TODO show upcoming and past are in closed section
     return (
         <>
             <h4>User Show List</h4>

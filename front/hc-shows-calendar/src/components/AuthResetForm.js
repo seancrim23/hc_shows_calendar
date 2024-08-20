@@ -57,7 +57,7 @@ export async function action({ request, params }) {
   
     //TODO these need to be updated to build the url differently based on env
     //+ ":" + process.env.REACT_APP_BACK_PORT
-    let url = process.env.REACT_APP_BACK_URL + '/user/' + "HOW DO I GET THE ID HERE" + '/reset';
+    let url = process.env.REACT_APP_BACK_URL + '/user/reset';
   
     const response = await fetch(url, {
       method: method,

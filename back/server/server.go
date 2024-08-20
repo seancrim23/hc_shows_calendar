@@ -52,8 +52,8 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 
 	//for these user should only be able to do these to themselves...
 	//"WithVerification" ??? should only be able to create user if verification exists for the user
-	r.HandleFunc("/user", utils.WithToken(h.createUser)).Methods("POST") //token
-	r.HandleFunc("/user", utils.WithToken(h.getUser)).Methods("GET")     //token
+	r.HandleFunc("/user", h.createUser).Methods("POST")              //token
+	r.HandleFunc("/user", utils.WithToken(h.getUser)).Methods("GET") //token
 	r.HandleFunc("/user/shows", utils.WithToken(h.getUserShows)).Methods("GET")
 	r.HandleFunc("/user", utils.WithToken(h.updateUser)).Methods("PUT")    // token
 	r.HandleFunc("/user", utils.WithToken(h.deleteUser)).Methods("DELETE") //token

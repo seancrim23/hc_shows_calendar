@@ -13,9 +13,11 @@ import ResetAuthPage from './pages/ResetAuth';
 import { action as authorizeAction } from './components/AuthForm';
 import { action as sendAdminEmailAction } from './components/UserAdminForm';
 import { action as resetAuthAction } from './components/AuthResetForm';
+import { action as newUserAction } from './components/UserForm';
 import AuthPage from './pages/Auth';
 import { tokenLoader, checkAuthLoader } from './util/auth';
-import { action as logoutAction } from './pages/Logout';
+import LogoutPage from './pages/Logout';
+import NewUserPage from './pages/NewUser';
 
 //TODO add auth loader
 const router = createBrowserRouter([
@@ -33,7 +35,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'logout',
-        action: logoutAction
+        element: <LogoutPage />,
       },
       {
         path: 'reset',
@@ -81,11 +83,17 @@ const router = createBrowserRouter([
         loader: userShowListLoader,
         id: 'user-show-list',
         element: <UserShowListPage />,
+        action: deleteShowAction,
       },
       {
         path: 'user/reset',
         element: <ResetAuthPage />,
         action: resetAuthAction,
+      },
+      {
+        path: 'user/new',
+        element: <NewUserPage />,
+        action: newUserAction,
       }
     ]
   }

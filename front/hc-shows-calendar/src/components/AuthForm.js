@@ -43,12 +43,13 @@ export async function action({ request, params }) {
 
   const authData = {
     username: data.get('username'),
-    pass: data.get('password'),
+    password: data.get('password'),
   };
 
   //TODO these need to be updated to build the url differently based on env
   //+ ":" + process.env.REACT_APP_BACK_PORT
   let url = process.env.REACT_APP_BACK_URL + '/auth';
+  console.log(url);
 
   const response = await fetch(url, {
     method: method,

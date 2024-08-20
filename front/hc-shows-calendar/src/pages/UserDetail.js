@@ -7,7 +7,7 @@ function UserDetailPage() {
     const { user } = useRouteLoaderData("user-detail");
     const token = useRouteLoaderData('root');
 
-    const isPromoter = token !== "";
+    const isPromoter = token !== null;
 
     return (
         <Suspense fallback={<p>Loading...</p>}>

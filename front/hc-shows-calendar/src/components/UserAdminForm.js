@@ -25,6 +25,7 @@ function UserAdminForm({ type }) {
           <label htmlFor="email">Email</label>
           <input id="email" type="email" name="email" required />
         </p>
+        <input type="hidden" name="type" id="type" value={type} />
         {actionButtons}
       </Form>
     )
@@ -39,11 +40,14 @@ export async function action({ request, params }) {
     const createUserAuthData = {
       email: data.get('email'),
     };
+
+    const type = data.get('type');
+    console.log(type);
   
     //TODO these need to be updated to build the url differently based on env
     //+ ":" + process.env.REACT_APP_BACK_PORT
     //somehow get the type out of here
-    let url = process.env.REACT_APP_BACK_URL + '/auth/setup';
+    let url = process.env.REACT_APP_BACK_URL + '/auth/' + type;
   
     const response = await fetch(url, {
       method: method,

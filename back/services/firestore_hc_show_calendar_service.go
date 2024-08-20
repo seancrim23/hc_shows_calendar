@@ -58,7 +58,6 @@ func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(
 // TODO pagination at some point?
 func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]string) (*[]models.Show, error) {
 	var shows []models.Show
-	var s models.Show
 	var q firestore.Query
 	var iter *firestore.DocumentIterator
 	//is there a better way to do this?
@@ -78,6 +77,7 @@ func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]st
 		iter = q.Documents(f.ctx)
 	}
 	for {
+		s := models.Show{}
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
@@ -193,10 +193,10 @@ func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User,
 
 func (f *FirestoreHCShowCalendarService) GetUserShows(username string) (*[]models.Show, error) {
 	var shows []models.Show
-	var s models.Show
 	fmt.Println("getting shows promoted by id " + username)
 	iter := f.database.Collection(utils.SHOW_COLLECTION).Where("promoter", "==", username).Documents(f.ctx)
 	for {
+		s := models.Show{}
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break

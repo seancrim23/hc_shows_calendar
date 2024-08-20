@@ -7,12 +7,13 @@ import { useSubmit } from "react-router-dom";
 function Show({ show, canEdit }) {
     const submit = useSubmit();
 
-    function startDeleteHandler() {
+    function startDeleteHandler(id) {
+        console.log(id)
         const proceed = window.confirm('Are you sure?');
 
-        /*if (proceed) {
-            submit(null, { method: 'DELETE' })
-        }*/
+        if (proceed) {
+            submit({ showId: id }, { method: 'DELETE' })
+        }
     }
 
     return (
@@ -34,7 +35,7 @@ function Show({ show, canEdit }) {
                     {canEdit &&
                         <menu>
                             <Button underline="none" component="button" color="inherit" href={`/shows/${show.id}/edit`}>Edit</Button>
-                            <Button underline="none" component="button" color="inherit" onClick={startDeleteHandler}>Delete</Button>
+                            <Button underline="none" component="button" color="inherit" onClick={() => startDeleteHandler(show.id)}>Delete</Button>
                         </menu>}
                 </CardContent>
             </Card>

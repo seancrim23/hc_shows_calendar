@@ -5,8 +5,7 @@ import Grid from '@mui/material/Grid';
 
 function RootLayout() {
     const token = useRouteLoaderData('root');
-
-    const loggedIn = token === "";
+    const loggedIn = token !== null;
     
     return <Grid
         container
