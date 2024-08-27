@@ -18,11 +18,6 @@ import (
 	"github.com/rs/cors"
 )
 
-//TODO FIGURE OUT SOME SOLUTION FOR ERROR HANDLING
-//MAYBE CODE OUT BASIC ERROR HANDLING THEN SEE IF I CAN
-//COMBINE CODE
-//WHAT ERROR CODES FIT FOR WHAT ENDPOINTS
-
 type HCShowCalendarServer struct {
 	service      services.HCShowCalendarService
 	emailService services.HCShowCalendarEmailService
@@ -384,10 +379,20 @@ func (h *HCShowCalendarServer) authUser(w http.ResponseWriter, r *http.Request) 
 	}
 	t, err := h.service.AuthUser(u)
 	if err != nil {
-		code = 500
+		switch err {
+		case utils.ErrTokenGeneration, utils.ErrUserDataMalformed:
+			code = 400
+		case utils.ErrUnauthorized:
+			code = 401
+		case utils.ErrUserDoesntExist:
+			code = 404
+		default:
+			code = 500
+		}
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
+
 	utils.RespondWithJSON(w, code, map[string]string{"token": t})
 }
 

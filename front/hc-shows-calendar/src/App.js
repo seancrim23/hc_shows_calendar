@@ -18,6 +18,7 @@ import AuthPage from './pages/Auth';
 import { tokenLoader, checkAuthLoader } from './util/auth';
 import LogoutPage from './pages/Logout';
 import NewUserPage from './pages/NewUser';
+import ErrorPage from './pages/Error';
 
 //TODO add auth loader
 const router = createBrowserRouter([
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     id: 'root',
     loader: tokenLoader,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
       {

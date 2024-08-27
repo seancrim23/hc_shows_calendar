@@ -1,5 +1,7 @@
 package utils
 
+import "errors"
+
 const SHOW_COLLECTION = "show"
 const USER_COLLECTION = "user"
 const VERIFICATION_COLLECTION = "verification"
@@ -23,3 +25,12 @@ const GMAIL_SMTP_PORT = 587
 // TODO maybe replace at some point with a proper domain handled email address instead of free gmail
 const MY_EMAIL = "theseancrim@gmail.com"
 const GMAIL_AUTH = "GMAIL_AUTH"
+
+var ErrUnauthorized = errors.New("failed authorization")
+var ErrTokenGeneration = errors.New("error generating token")
+var ErrUserDoesntExist = errors.New("cannot find user")
+var ErrShowDoesntExist = errors.New("cannot find show")
+
+// TODO take another look at this, maybe more descriptive?
+var ErrUserDataMalformed = errors.New("user data is malformed")
+var ErrShowDataMalformed = errors.New("show data is malformed")

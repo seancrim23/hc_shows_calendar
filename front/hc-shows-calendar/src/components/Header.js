@@ -6,6 +6,14 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 
 function Header({ loggedIn }) {
+  var headeroptions = loggedIn ? [
+    <Link href="/user/profile" color="inherit" underline="hover">Profile</Link>,
+    <Link href="/user/shows" color="inherit" underline="hover">Shows</Link>,
+    <Link href="/logout" color="inherit" underline="hover">Logout</Link>,
+  ] : [
+    <Link href="/login" color="inherit" underline="hover">Login</Link>,
+  ]
+
   return (
     <Grid item xs={12}>
       <Box sx={{ flexGrow: 1, marginTop: 2 }}>
@@ -23,13 +31,7 @@ function Header({ loggedIn }) {
             marginTop: 0.5,
             marginBottom: 1,
           }} >
-            {loggedIn ? <div>
-              <Link href="/user/profile" color="inherit" underline="hover">Profile</Link>
-              <Link href="/user/shows" color="inherit" underline="hover">Shows</Link>
-              <Link href="/logout" color="inherit" underline="hover">Logout</Link>
-            </div> : <div>
-              <Link href="/login" color="inherit" underline="hover">Login</Link>
-            </div>}
+            {headeroptions}
           </Breadcrumbs>
         </AppBar>
       </Box>

@@ -42,14 +42,8 @@ export async function loader({ params }) {
 }
 
 export async function action({ request, params }) {
-    console.log("in delete action...")
-    console.log(params)
-    console.log(request)
     const data = await request.formData();
     const showId = data.get('showId');
-    //const token = getAuthToken();
-    //TODO these need to be updated to build the url differently based on env
-    //+ ":" + process.env.REACT_APP_BACK_PORT
 
     const token = getAuthToken();
     const response = await fetch(process.env.REACT_APP_BACK_URL + "/show/" + showId, {

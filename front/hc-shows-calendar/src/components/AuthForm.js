@@ -18,9 +18,6 @@ function AuthForm({ method }) {
 
   return (
     <Form method={method}>
-      {data && data.errors && <ul>
-        {Object.values(data.errors).map(err => <li key={err}>{err}</li>)}
-      </ul>}
       <p>
         <label htmlFor="username">Username</label>
         <input id="username" type="text" name="username" required />
@@ -29,6 +26,7 @@ function AuthForm({ method }) {
         <label htmlFor="password">Password</label>
         <input id="password" type="password" name="password" required />
       </p>
+      {data && data.error && <div>{data.error}</div>}
       {actionButtons}
     </Form>
   );
@@ -46,10 +44,7 @@ export async function action({ request, params }) {
     password: data.get('password'),
   };
 
-  //TODO these need to be updated to build the url differently based on env
-  //+ ":" + process.env.REACT_APP_BACK_PORT
   let url = process.env.REACT_APP_BACK_URL + '/auth';
-  console.log(url);
 
   const response = await fetch(url, {
     method: method,
@@ -59,16 +54,27 @@ export async function action({ request, params }) {
     body: JSON.stringify(authData),
   });
 
-  if (response.status === 422) {
-    return response;
+  switch (response.status) {
+    case 400:
+      //log out specific error
+      return json({ error: "login failed. " });
+    case 401:
+      //unauthorized
+      return json({ error: "login failed." });
+    case 404:
+      //cant find user
+      return json({ error: "login failed." });
+    case 500:
+      throw json({ message: 'An error occurred. Please try again and contact us if the error continues. Thank you!' }, { status: 500 });
+    default:
+      //do something
   }
 
   if (!response.ok) {
-    throw json({ message: 'Login failed!' }, { status: 500 });
+    throw json({ message: 'An error occurred. Please try again and contact us if the error continues. Thank you!' }, { status: 500 });
   }
 
   const resData = await response.json();
-  console.log(resData);
   const token = resData.token;
 
   localStorage.setItem('token', token);

@@ -324,27 +324,26 @@ func (f *FirestoreHCShowCalendarService) AuthUser(user models.User) (string, err
 	if err != nil {
 		fmt.Println("error getting user")
 		fmt.Println(err)
-		return "", errors.New("error getting user")
+		return "", utils.ErrUserDoesntExist
 	}
 	err = dsnap.DataTo(&u)
 	if err != nil {
 		fmt.Println(err)
-		return "", errors.New("error getting user")
+		return "", utils.ErrUserDataMalformed
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(user.Password))
 	if err != nil {
-		//probably dont want this to tell too much
 		fmt.Println("password does not match")
 		fmt.Println(err)
-		return "", errors.New("failed login")
+		return "", utils.ErrUnauthorized
 	}
 
 	t, err := utils.GenerateToken(u.Username)
 	if err != nil {
 		fmt.Println("error generating access token")
 		fmt.Println(err)
-		return "", err
+		return "", utils.ErrTokenGeneration
 	}
 
 	return t, nil
