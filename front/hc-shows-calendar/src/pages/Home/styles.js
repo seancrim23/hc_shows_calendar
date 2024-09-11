@@ -5,7 +5,7 @@ export const showFilterStyles = {
         justifyContent: 'space-between',
         paddingLeft: '20px',
         paddingRight: '20px',
-        height: '65px',
+        height: '110px',
         backgroundColor: '#f5f5f5',
         borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
     }
@@ -18,7 +18,7 @@ export const showListStyles = {
         justifyContent: 'space-between',
         paddingLeft: '20px',
         paddingRight: '20px',
-        height: '65px',
+        height: 'auto',
         backgroundColor: '#FFFFFF',
         borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
     }

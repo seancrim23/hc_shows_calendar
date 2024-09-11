@@ -18,7 +18,7 @@ function Show({ show, canEdit }) {
 
     return (
         <>
-            <Card sx={{ display: 'flex' }}>
+            <Card sx={{ display: 'flex', marginTop:'10px', marginBottom:'10px', height:'100px', width:'600px' }}>
                 <CardContent sx={{ flex: 1 }}>
                     <Typography component="h2" variant="h5">
                         {show.date}

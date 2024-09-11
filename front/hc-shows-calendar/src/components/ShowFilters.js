@@ -71,40 +71,38 @@ function ShowFilters({ setShowList, setHasError }) {
 
     return (
         <>
-            <Box sx={{ minWidth: 160 }}>
-                <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <InputLabel id="state-label">State</InputLabel>
-                    <Select
-                        labelId="state-label"
-                        id="state-select"
-                        value={stateCode}
-                        label="StateCode"
-                        onChange={handleStateChange}
-                    >
-                        {
-                            Object.keys(statesMapping).map((key, i) => (
-                                <MenuItem key={i} value={key}>{key}</MenuItem>
-                            ))
-                        }
-                    </Select>
-                </FormControl>
-                {stateCode &&
-                    <div>
-                        <FormControl sx={{ m: 1, minWidth: 160 }}>
-                            <Autocomplete
-                                disablePortal
-                                id="city-list"
-                                options={cityList}
-                                sx={{ width: 300 }}
-                                renderInput={(params) => <TextField {...params} label="City" />}
-                                value={city}
-                                onChange={handleCityChange}
-                                isOptionEqualToValue={(city, value) => city.value === value.value}
-                            />
-                        </FormControl>
-                        <Button underline="none" component="button" color="inherit" onClick={handleClearSearchFilters}>Clear filters</Button>
-                    </div>}
-            </Box>
+            <FormControl sx={{ m: 1, minWidth: 120 }}>
+                <InputLabel id="state-label">State</InputLabel>
+                <Select
+                    labelId="state-label"
+                    id="state-select"
+                    value={stateCode}
+                    label="StateCode"
+                    onChange={handleStateChange}
+                >
+                    {
+                        Object.keys(statesMapping).map((key, i) => (
+                            <MenuItem key={i} value={key}>{key}</MenuItem>
+                        ))
+                    }
+                </Select>
+            </FormControl>
+            {stateCode &&
+                <>
+                    <FormControl sx={{ m: 1, minWidth: 120 }}>
+                        <Autocomplete
+                            disablePortal
+                            id="city-list"
+                            options={cityList}
+                            sx={{ width: 300 }}
+                            renderInput={(params) => <TextField {...params} label="City" />}
+                            value={city}
+                            onChange={handleCityChange}
+                            isOptionEqualToValue={(city, value) => city.value === value.value}
+                        />
+                    </FormControl>
+                    <Button underline="none" variant="outlined" component="button" color="inherit" sx={{marginTop:'15px'}} onClick={handleClearSearchFilters}>Clear filters</Button>
+                </>}
         </>
     )
 }

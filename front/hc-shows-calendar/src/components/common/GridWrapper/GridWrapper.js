@@ -2,10 +2,12 @@ import React from 'react'
 import Grid from '@mui/material/Grid';
 import { gridWrapperStyles } from './styles';
 
-const GridWrapper = ({ children }) => {
+const GridWrapper = ({ children, size }) => {
+
+    console.log(children)
 
     return (
-        <Grid item xs={12} sx={gridWrapperStyles}>
+        <Grid item size={size} sx={gridWrapperStyles}>
             {children}
         </Grid>
     )

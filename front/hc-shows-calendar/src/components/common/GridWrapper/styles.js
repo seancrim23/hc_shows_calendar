@@ -4,5 +4,6 @@ export const gridWrapperStyles = {
     minHeight: 'calc(100vh - 166px)',
     marginTop: '10px',
     marginBottom: '10px',
+    width: '50%',
     backgroundColor: '#eaeff1',
 };

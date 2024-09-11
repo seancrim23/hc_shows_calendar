@@ -10,6 +10,8 @@ function RootLayout() {
     const loggedIn = token !== null;
     const submit = useSubmit();
 
+    console.log(token);
+
     useEffect(() => {
         if (!token) {
             return;
