@@ -10,6 +10,12 @@ import { showFilterStyles, showListStyles } from "./styles";
 function HomePage() {
     const [showList, setShowList] = useState([]);
     const [hasError, setHasError] = useState(false);
+    const [stateSelected, setStateSelected] = useState('');
+
+    var filterContainerHeight = '110px';
+    if (stateSelected !== '') {
+        filterContainerHeight = '250px';
+    }
 
     return (
         <GridWrapper size={12}>
@@ -19,15 +25,15 @@ function HomePage() {
                 justifyContent: 'space-between',
                 paddingLeft: '20px',
                 paddingRight: '20px',
-                height: '110px',
-                width: {xs: '85%', sm: '85%', lg:'94%', xl:'94%'},
+                height: {xs: {filterContainerHeight}, sm: {filterContainerHeight}, md: '130px', lg: '110px', xl: '110px'},
+                width: { xs: '85%', sm: '94%', md: '94%', lg: '94%', xl: '94%' },
                 backgroundColor: '#f5f5f5',
                 borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
             }}>
                 <Grid container>
                     <Grid size={12}>
-                        <Typography variant="h6" sx={{ paddingTop: '8px', fontSize: { xs: 12, sm: 14, md: 16, lg: 20, xl: 20 } }}>Choose a state and city to find shows in...</Typography>
-                        <ShowFilters sx={{ alignItems: 'center' }} setShowList={setShowList} setHasError={setHasError} />
+                            <Typography variant="h6" sx={{ paddingTop: {xs: '4px', sm: '6px', md: '6px', lg: '6px', xl:'8px'}, fontSize: { xs: 12, sm: 18, md: 18, lg: 18, xl: 20 } }}>Choose a state and city to find shows in...</Typography>
+                        <ShowFilters sx={{ alignItems: 'center' }} setStateSelected={setStateSelected} setShowList={setShowList} setHasError={setHasError} />
                     </Grid>
                 </Grid>
             </Box>

@@ -8,8 +8,10 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
+import Grid from '@mui/material/Grid';
 
-function ShowFilters({ setShowList, setHasError }) {
+
+function ShowFilters({ setShowList, setHasError, setStateSelected }) {
     const [stateCode, setStateCode] = useState('');
     const [cityList, setCityList] = useState([]);
     const [city, setCity] = useState('');
@@ -17,6 +19,7 @@ function ShowFilters({ setShowList, setHasError }) {
     const handleStateChange = (event) => {
         setCity('')
         setStateCode(event.target.value);
+        setStateSelected(event.target.value);
         setCityList(statesMapping[event.target.value]);
         fetchShows({ state: event.target.value, city: '' })
     };
@@ -28,6 +31,7 @@ function ShowFilters({ setShowList, setHasError }) {
 
     const handleClearSearchFilters = (event) => {
         setStateCode('');
+        setStateSelected('');
         setCityList([]);
         setCity('');
         setShowList([]);
@@ -70,46 +74,47 @@ function ShowFilters({ setShowList, setHasError }) {
     }
 
     return (
-        <>
-            <FormControl sx={{ m: 1, minWidth: {xs: 50, sm: 70, md: 90, lg: 150, xl: 150}, fontSize: {xs: 4, sm: 4}, }}>
-                <InputLabel id="state-label">State</InputLabel>
-                <Select
-                    labelId="state-label"
-                    id="state-select"
-                    value={stateCode}
-                    label="StateCode"
-                    onChange={handleStateChange}
-                    sx={{
-                        fontSize: {xs: 4, sm: 4},
-                        height: {xs: 20}
-                    }}
-                >
-                    {
-                        Object.keys(statesMapping).map((key, i) => (
-                            <MenuItem sx={{
-                                fontSize: {xs: 8, sm: 8}
-                            }} key={i} value={key}>{key}</MenuItem>
-                        ))
-                    }
-                </Select>
-            </FormControl>
+            <Grid item size={12}>
+                <FormControl sx={{ m: 1, minWidth: { xs: 210, sm: 65, md: 65, lg: 115, xl: 150 }, fontSize: { xs: 8, sm: 8 }, }}>
+                    <InputLabel id="state-label">State</InputLabel>
+                    <Select
+                        labelId="state-label"
+                        id="state-select"
+                        value={stateCode}
+                        label="StateCode"
+                        onChange={handleStateChange}
+                    >
+                        {
+                            Object.keys(statesMapping).map((key, i) => (
+                                <MenuItem sx={{
+                                }} key={i} value={key}>{key}</MenuItem>
+                            ))
+                        }
+                    </Select>
+                </FormControl>
             {stateCode &&
                 <>
-                    <FormControl sx={{ m: 1, minWidth: {xs: 40, sm: 60, md: 80,lg: 120, xl: 120} }}>
-                        <Autocomplete
-                            disablePortal
-                            id="city-list"
-                            options={cityList}
-                            sx={{ width: {xs: 70, sm: 90, md: 150, lg:300, xl: 300} }}
-                            renderInput={(params) => <TextField {...params} label="City" />}
-                            value={city}
-                            onChange={handleCityChange}
-                            isOptionEqualToValue={(city, value) => city.value === value.value}
-                        />
-                    </FormControl>
-                    <Button underline="none" variant="outlined" component="button" color="inherit" sx={{marginTop:'17px', marginLeft:'18px', fontSize: {xs: 10, sm: 10}}} onClick={handleClearSearchFilters}>Clear filters</Button>
+                        <FormControl sx={{ m: 1, minWidth: { xs: 40, sm: 60, md: 80, lg: 120, xl: 120 } }}>
+                            <Autocomplete
+                                disablePortal
+                                id="city-list"
+                                options={cityList}
+                                sx={{ width: { xs: 210, sm: 170, md: 175, lg: 240, xl: 300 } }}
+                                renderInput={(params) => <TextField {...params} label="City" />}
+                                value={city}
+                                onChange={handleCityChange}
+                                isOptionEqualToValue={(city, value) => city.value === value.value}
+                            />
+                        </FormControl>
+                        <Button underline="none" variant="outlined" component="button" color="inherit" sx={{ 
+                            marginTop: {xs: '3px', sm:'15px', md: '17px', lg:'17px', xl: '17px'}, 
+                            marginLeft: {xs: '50px', sm: '8px', md: '10px', lg: '18px', xl: '18px'},
+                            marginBottom: {xs: '7px', sm: '0px', md: '0px', lg: '0px', xl: '0px'},
+                            fontSize: { xs: 10, sm: 13, md: 13, lg: 14, xl: 14 }
+                        }} 
+                        onClick={handleClearSearchFilters}>Clear filters</Button>
                 </>}
-        </>
+                </Grid>
     )
 }
 

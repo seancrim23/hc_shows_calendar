@@ -13,7 +13,7 @@ const GridWrapper = ({ children, size }) => {
             minHeight: 'calc(100vh - 166px)',
             marginTop: '10px',
             marginBottom: '10px',
-            width: {xs: '85%', s: '85%', md: '83%', lg:'55%', xl: '40%'},
+            width: {xs: '85%', s: '63%', md: '58%', lg:'55%', xl: '40%'},
             backgroundColor: '#eaeff1',
          }}>
             {children}
