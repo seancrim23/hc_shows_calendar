@@ -3,6 +3,7 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { useSubmit } from "react-router-dom";
+import { format } from 'date-fns';
 
 function Show({ show, canEdit }) {
     const submit = useSubmit();
@@ -18,19 +19,21 @@ function Show({ show, canEdit }) {
 
     return (
         <>
-            <Card sx={{ display: 'flex', marginTop:'10px', marginBottom:'10px', height:'100px', width:'600px' }}>
-                <CardContent sx={{ flex: 1 }}>
-                    <Typography component="h2" variant="h5">
-                        {show.date}
+            <Card sx={{ 
+                display: 'flex', 
+                marginTop:'10px', 
+                marginBottom:'10px',
+                height:{xs: '85px', sm: '90px', md: '90px', lg: '100px', xl: '115px'},
+                width: {xs: '230px', sm: '435px', md: '435px', lg: '565px', xl: '530px'} }}>
+                <CardContent>
+                    <Typography variant="h6">
+                        {format(show.date, 'Pp')}
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                        {show.lineup.join(", ")}
+                        {show.lineup.join(" / ")}
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                        {show.venue}
-                    </Typography>
-                    <Typography variant="subtitle1" color="text.secondary">
-                        {show.city + ", " + show.state}
+                        {show.venue + " - " + show.city + ", " + show.state}
                     </Typography>
                     {canEdit &&
                         <menu>

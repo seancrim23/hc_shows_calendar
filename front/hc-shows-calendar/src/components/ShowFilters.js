@@ -74,8 +74,8 @@ function ShowFilters({ setShowList, setHasError, setStateSelected }) {
     }
 
     return (
-            <Grid item size={12}>
-                <FormControl sx={{ m: 1, minWidth: { xs: 210, sm: 65, md: 65, lg: 115, xl: 150 }, fontSize: { xs: 8, sm: 8 }, }}>
+            <Grid item size={12} sx={{display: 'static'}}>
+                <FormControl sx={{ m: 1, minWidth: { xs: 210, sm: 65, md: 65, lg: 115, xl: 95 }, fontSize: { xs: 8, sm: 8 }, }}>
                     <InputLabel id="state-label">State</InputLabel>
                     <Select
                         labelId="state-label"
@@ -94,12 +94,12 @@ function ShowFilters({ setShowList, setHasError, setStateSelected }) {
                 </FormControl>
             {stateCode &&
                 <>
-                        <FormControl sx={{ m: 1, minWidth: { xs: 40, sm: 60, md: 80, lg: 120, xl: 120 } }}>
+                        <FormControl sx={{ m: 1,  minWidth: { xs: 40, sm: 60, md: 80, lg: 120, xl: 120 } }}>
                             <Autocomplete
                                 disablePortal
                                 id="city-list"
                                 options={cityList}
-                                sx={{ width: { xs: 210, sm: 170, md: 175, lg: 240, xl: 300 } }}
+                                sx={{width: { xs: 210, sm: 170, md: 175, lg: 240, xl: 220 } }}
                                 renderInput={(params) => <TextField {...params} label="City" />}
                                 value={city}
                                 onChange={handleCityChange}
