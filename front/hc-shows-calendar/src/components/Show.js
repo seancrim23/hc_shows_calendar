@@ -20,11 +20,8 @@ function Show({ show, canEdit }) {
     return (
         <>
             <Card sx={{ 
-                display: 'flex', 
-                marginTop:'10px', 
-                marginBottom:'10px',
-                height:{xs: '85px', sm: '90px', md: '90px', lg: '100px', xl: '115px'},
-                width: {xs: '230px', sm: '435px', md: '435px', lg: '565px', xl: '530px'} }}>
+                display: 'flex',
+                margin: '8px'}}>
                 <CardContent>
                     <Typography variant="h6">
                         {format(show.date, 'Pp')}

@@ -11,7 +11,7 @@ import { useState } from 'react';
 import Grid from '@mui/material/Grid';
 
 
-function ShowFilters({ setShowList, setHasError, setStateSelected }) {
+function ShowFilters({ setShowList, setHasError }) {
     const [stateCode, setStateCode] = useState('');
     const [cityList, setCityList] = useState([]);
     const [city, setCity] = useState('');
@@ -19,7 +19,6 @@ function ShowFilters({ setShowList, setHasError, setStateSelected }) {
     const handleStateChange = (event) => {
         setCity('')
         setStateCode(event.target.value);
-        setStateSelected(event.target.value);
         setCityList(statesMapping[event.target.value]);
         fetchShows({ state: event.target.value, city: '' })
     };
@@ -31,7 +30,6 @@ function ShowFilters({ setShowList, setHasError, setStateSelected }) {
 
     const handleClearSearchFilters = (event) => {
         setStateCode('');
-        setStateSelected('');
         setCityList([]);
         setCity('');
         setShowList([]);
@@ -74,8 +72,9 @@ function ShowFilters({ setShowList, setHasError, setStateSelected }) {
     }
 
     return (
-            <Grid item size={12} sx={{display: 'static'}}>
-                <FormControl sx={{ m: 1, minWidth: { xs: 210, sm: 65, md: 65, lg: 115, xl: 95 }, fontSize: { xs: 8, sm: 8 }, }}>
+        <>
+            <Grid item xs={12} sm={12} md={3} lg={3} xl={3}>
+                <FormControl sx={{width: {xs: '100%', sm: '100%', md: '95%', lg: '95%', xl: '95%'}}}>
                     <InputLabel id="state-label">State</InputLabel>
                     <Select
                         labelId="state-label"
@@ -92,29 +91,28 @@ function ShowFilters({ setShowList, setHasError, setStateSelected }) {
                         }
                     </Select>
                 </FormControl>
+            </Grid>
             {stateCode &&
                 <>
-                        <FormControl sx={{ m: 1,  minWidth: { xs: 40, sm: 60, md: 80, lg: 120, xl: 120 } }}>
+                    <Grid item xs={12} sm={12} md={6} lg={6} xl={6}>
+                        <FormControl sx={{width: {xs: '100%', sm: '100%', md: '95%', lg: '95%', xl: '95%'}}}>
                             <Autocomplete
                                 disablePortal
                                 id="city-list"
                                 options={cityList}
-                                sx={{width: { xs: 210, sm: 170, md: 175, lg: 240, xl: 220 } }}
                                 renderInput={(params) => <TextField {...params} label="City" />}
                                 value={city}
                                 onChange={handleCityChange}
                                 isOptionEqualToValue={(city, value) => city.value === value.value}
                             />
                         </FormControl>
-                        <Button underline="none" variant="outlined" component="button" color="inherit" sx={{ 
-                            marginTop: {xs: '3px', sm:'15px', md: '17px', lg:'17px', xl: '17px'}, 
-                            marginLeft: {xs: '50px', sm: '8px', md: '10px', lg: '18px', xl: '18px'},
-                            marginBottom: {xs: '7px', sm: '0px', md: '0px', lg: '0px', xl: '0px'},
-                            fontSize: { xs: 10, sm: 13, md: 13, lg: 14, xl: 14 }
-                        }} 
-                        onClick={handleClearSearchFilters}>Clear filters</Button>
+                    </Grid>
+                    <Grid item xs={12} sm={12} md={3} lg={3} xl={3} sx={{paddingTop:'10px'}}>
+                        <Button sx={{width:'100%'}} underline="none" variant="outlined" component="button" color="inherit"
+                            onClick={handleClearSearchFilters}>Clear filters</Button>
+                    </Grid>
                 </>}
-                </Grid>
+        </>
     )
 }
 

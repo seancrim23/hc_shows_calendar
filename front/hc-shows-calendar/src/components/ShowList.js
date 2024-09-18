@@ -1,4 +1,6 @@
 import Show from './Show';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 function ShowList({ shows, noShowsMessage, isPromoter }) {
     //protect from null case
@@ -8,8 +10,8 @@ function ShowList({ shows, noShowsMessage, isPromoter }) {
 
     return (
         <>
-            {(shows.length === 0) ? <p>{noShowsMessage}</p> : shows.map((show) => (
-                <Show key={show.id} show={show} canEdit={isPromoter} />
+            {(shows.length === 0) ? <Grid item xs={12} sx={{padding: '5px'}}><Typography variant="subtitle1">{noShowsMessage}</Typography></Grid> : shows.map((show) => (
+                <Grid item xs={12}><Show key={show.id} show={show} canEdit={isPromoter} /></Grid>
             ))}
         </>
     )
