@@ -4,6 +4,8 @@ import Footer from '../components/Footer';
 import Grid from '@mui/material/Grid';
 import { useEffect } from 'react';
 import { getTokenDuration } from '../util/auth';
+import { Box } from '@mui/material';
+import Container from '@mui/material/Container';
 
 function RootLayout() {
     const token = useRouteLoaderData('root');
@@ -29,17 +31,24 @@ function RootLayout() {
         }, tokenDuration);
     }, [token, submit]);
 
-    return <Grid
-        container
-        alignItems="center"
-        justifyContent="center"
-        spacing={0}
-        direction="column"
-        sx={{ background: '#636363' }}>
-        <Header loggedIn={loggedIn} />
-        <Outlet />
-        <Footer />
-    </Grid>
+    return (
+        <Box sx={{ background: '#636363', height: '100vh' }}>
+            <Container maxWidth="lg">
+                <Header loggedIn={loggedIn} />
+                <Grid
+                    container
+                    alignItems="center"
+                    justifyContent="flex-start"
+                    spacing={0}
+                    direction="column"
+                    display="flex">
+                    <Outlet />
+                </Grid>
+                <Footer />
+            </Container>
+
+        </Box>
+    );
 }
 
 export default RootLayout;

@@ -1,4 +1,7 @@
 import { useActionData, useNavigation, Form, json, redirect } from "react-router-dom";
+import InputLabel from "@mui/material/InputLabel";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 
 //TODO needs material UI
 //maybe formik?
@@ -10,21 +13,21 @@ function AuthForm({ method }) {
 
   var actionButtons = (
     <div>
-      <button disabled={isSubmitting}>
+      <Button disabled={isSubmitting}>
         {isSubmitting ? 'Submitting...' : 'Login'}
-      </button>
+      </Button>
     </div>
   );
 
   return (
     <Form method={method}>
       <p>
-        <label htmlFor="username">Username</label>
-        <input id="username" type="text" name="username" required />
+        <InputLabel htmlFor="username">Username</InputLabel>
+        <TextField id="username" type="text" name="username" required />
       </p>
       <p>
-        <label htmlFor="password">Password</label>
-        <input id="password" type="password" name="password" required />
+        <InputLabel htmlFor="password">Password</InputLabel>
+        <TextField id="password" type="password" name="password" required />
       </p>
       {data && data.error && <div>{data.error}</div>}
       {actionButtons}

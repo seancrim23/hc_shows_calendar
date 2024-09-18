@@ -7,7 +7,7 @@ const GridWrapper = ({ children }) => {
     console.log(children)
 
     return (
-        <Grid container item sx={{ 
+        <Grid container item xs={12} sx={{ 
             flexGrow: 1,
             display: 'flex',
             direction:'column',
@@ -16,7 +16,6 @@ const GridWrapper = ({ children }) => {
             padding: '48px 32px',
             marginTop: '10px',
             marginBottom: '10px',
-            width: {xs: '85%', s: '63%', md: '58%', lg:'55%', xl: '40%'},
             backgroundColor: '#eaeff1',
          }}>
             {children}
