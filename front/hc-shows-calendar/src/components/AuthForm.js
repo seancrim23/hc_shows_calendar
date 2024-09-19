@@ -1,38 +1,75 @@
-import { useActionData, useNavigation, Form, json, redirect } from "react-router-dom";
+import { useActionData, useNavigation, json, redirect, useSubmit } from "react-router-dom";
 import InputLabel from "@mui/material/InputLabel";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { Form, Formik } from "formik";
+import * as Yup from 'yup';
+import { REQUIRED_FIELD } from "../util/Constants";
+import Input from "@mui/material/Input";
 
 //TODO needs material UI
 //maybe formik?
 function AuthForm({ method }) {
   const data = useActionData();
   const navigation = useNavigation();
+  const submit = useSubmit();
 
   const isSubmitting = navigation.state === "submitting";
 
+  const validateSchema = Yup.object().shape({
+    username: Yup.string().required(REQUIRED_FIELD),
+    //TODO expand password validation
+    password: Yup.string().required(REQUIRED_FIELD),
+  })
+
   var actionButtons = (
     <div>
-      <Button variant="outlined" sx={{ width: '100%', marginBottom: '5px'}} disabled={isSubmitting}>
+      <Button variant="outlined" type="submit" sx={{ width: '100%', marginBottom: '5px' }} disabled={isSubmitting}>
         {isSubmitting ? 'Submitting...' : 'Login'}
       </Button>
     </div>
   );
 
   return (
-    <Form method={method}>
-      <Box sx={{paddingBottom: '10px'}}>
-      <Typography sx={{ textAlign: 'center', paddingTop: '10px' }} variant="h4" gutterBottom>Login</Typography>
-      <InputLabel htmlFor="username">Username</InputLabel>
-      <TextField id="username" type="text" name="username" sx={{width:'100%'}}  required />
-      <InputLabel htmlFor="password">Password</InputLabel>
-      <TextField id="password" type="password" name="password" sx={{width:'100%'}} required />
-      </Box>
-      {data && data.error && <div>{data.error}</div>}
-      {actionButtons}
-    </Form>
+    <Formik
+      initialValues={{
+        username: '',
+        password: '',
+      }}
+      validationSchema={validateSchema}
+      onSubmit={async (values) => {
+        submit(values, { method: method })
+      }}>
+      {props => (
+        <Form onSubmit={props.handleSubmit}>
+          <Box sx={{ paddingBottom: '10px' }}>
+            <Typography sx={{ textAlign: 'center', paddingTop: '10px' }} variant="h4" gutterBottom>Login</Typography>
+            <TextField
+              id="username"
+              label="Username"
+              type="text"
+              name="username"
+              value={props.values.username}
+              onBlur={props.handleBlur}
+              onChange={props.handleChange}
+              sx={{ width: '100%' }} />
+            <TextField
+              id="password"
+              label="Password"
+              type="password"
+              name="password"
+              value={props.values.password}
+              onBlur={props.handleBlur}
+              onChange={props.handleChange}
+              sx={{ width: '100%' }} />
+          </Box>
+          {data && data.error && <div>{data.error}</div>}
+          {actionButtons}
+        </Form>
+      )}
+    </Formik>
   );
 
 }

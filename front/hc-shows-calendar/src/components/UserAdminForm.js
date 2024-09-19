@@ -1,73 +1,103 @@
 //form for admins to create users - really only need an email field
 //needs to be token protected
-import { useActionData, useNavigation, Form, json, redirect } from "react-router-dom";
+import { useActionData, useNavigation, json, redirect, useSubmit } from "react-router-dom";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import InputLabel from "@mui/material/InputLabel";
 import TextField from "@mui/material/TextField";
+import { Form, Formik } from "formik";
+import * as Yup from 'yup';
+import { REQUIRED_FIELD } from "../util/Constants";
+import Input from "@mui/material/Input";
 
 function UserAdminForm({ type }) {
-    const data = useActionData();
-    const navigation = useNavigation();
-  
-    const isSubmitting = navigation.state === "submitting";
-  
-    var actionButtons = (
-      <div>
-        <Button variant="outlined" sx={{ width: '100%', marginBottom: '5px'}} disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : (type === 'setup' ? 'Create User' : 'Reset Password')}
-        </Button>
-      </div>
-    );
+  const data = useActionData();
+  const navigation = useNavigation();
+  const submit = useSubmit();
 
-    return (
-        <Form method="POST">
-        {data && data.errors && <ul>
-          {Object.values(data.errors).map(err => <li key={err}>{err}</li>)}
-        </ul>}
-        <InputLabel htmlFor="email">Email</InputLabel>
-        <TextField id="email" type="text" name="email" sx={{width:'100%', paddingBottom:'10px'}}  required />
-        <input type="hidden" name="type" id="type" value={type} />
-        {actionButtons}
-      </Form>
-    )
+  const isSubmitting = navigation.state === "submitting";
+
+  const validateSchema = Yup.object().shape({
+    email: Yup.string().required(REQUIRED_FIELD),
+  })
+
+  var actionButtons = (
+    <div>
+      <Button variant="outlined" type="submit" color="primary" sx={{ width: '100%', marginBottom: '5px' }} disabled={isSubmitting}>
+        {isSubmitting ? 'Submitting...' : (type === 'setup' ? 'Create User' : 'Reset Password')}
+      </Button>
+    </div>
+  );
+
+  return (
+    <Formik
+      initialValues={{
+        email: '',
+        type: type,
+      }}
+      validationSchema={validateSchema}
+      onSubmit={async (values) => {
+        submit(values, { method: "POST" });
+      }}>
+      {props => (
+        <Form onSubmit={props.handleSubmit}>
+          {data && data.errors && <ul>
+            {Object.values(data.errors).map(err => <li key={err}>{err}</li>)}
+          </ul>}
+          <TextField
+            id="email"
+            name="email"
+            label="Email"
+            type="text"
+            value={props.values.email}
+            onBlur={props.handleBlur}
+            onChange={props.handleChange}
+            sx={{
+              width: '100%',
+              paddingBottom: '10px'
+            }}
+          />
+          <Input type="hidden" name="type" id="type" value={props.values.email} />
+          {actionButtons}
+        </Form>
+      )}
+    </Formik>
+  )
 }
 
 export default UserAdminForm;
 
 export async function action({ request, params }) {
-    const method = request.method;
-    const data = await request.formData();
-  
-    const createUserAuthData = {
-      email: data.get('email'),
-    };
+  const method = request.method;
+  const data = await request.formData();
 
-    const type = data.get('type');
-    console.log(type);
-  
-    //TODO these need to be updated to build the url differently based on env
-    //+ ":" + process.env.REACT_APP_BACK_PORT
-    //somehow get the type out of here
-    let url = process.env.REACT_APP_BACK_URL + '/auth/' + type;
-  
-    const response = await fetch(url, {
-      method: method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(createUserAuthData),
-    });
-  
-    if (response.status === 422) {
-      return response;
-    }
-  
-    if (!response.ok) {
-      throw json({ message: 'User auth creation failed failed!' }, { status: 500 });
-    }
-  
-    //i think if it works it should just redirect back to this page?
-    //either that or some admin user landing thing
-    return redirect('/');
+  const createUserAuthData = {
+    email: data.get('email'),
+  };
+
+  const type = data.get('type');
+  console.log(type);
+
+  //TODO these need to be updated to build the url differently based on env
+  //+ ":" + process.env.REACT_APP_BACK_PORT
+  //somehow get the type out of here
+  let url = process.env.REACT_APP_BACK_URL + '/auth/' + type;
+
+  const response = await fetch(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(createUserAuthData),
+  });
+
+  if (response.status === 422) {
+    return response;
   }
+
+  if (!response.ok) {
+    throw json({ message: 'User auth creation failed failed!' }, { status: 500 });
+  }
+
+  //i think if it works it should just redirect back to this page?
+  //either that or some admin user landing thing
+  return redirect('/');
+}
