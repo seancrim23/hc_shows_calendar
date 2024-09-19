@@ -2,6 +2,8 @@ import { useActionData, useNavigation, Form, json, redirect } from "react-router
 import InputLabel from "@mui/material/InputLabel";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 //TODO needs material UI
 //maybe formik?
@@ -13,7 +15,7 @@ function AuthForm({ method }) {
 
   var actionButtons = (
     <div>
-      <Button disabled={isSubmitting}>
+      <Button variant="outlined" sx={{ width: '100%', marginBottom: '5px'}} disabled={isSubmitting}>
         {isSubmitting ? 'Submitting...' : 'Login'}
       </Button>
     </div>
@@ -21,14 +23,13 @@ function AuthForm({ method }) {
 
   return (
     <Form method={method}>
-      <p>
-        <InputLabel htmlFor="username">Username</InputLabel>
-        <TextField id="username" type="text" name="username" required />
-      </p>
-      <p>
-        <InputLabel htmlFor="password">Password</InputLabel>
-        <TextField id="password" type="password" name="password" required />
-      </p>
+      <Box sx={{paddingBottom: '10px'}}>
+      <Typography sx={{ textAlign: 'center', paddingTop: '10px' }} variant="h4" gutterBottom>Login</Typography>
+      <InputLabel htmlFor="username">Username</InputLabel>
+      <TextField id="username" type="text" name="username" sx={{width:'100%'}}  required />
+      <InputLabel htmlFor="password">Password</InputLabel>
+      <TextField id="password" type="password" name="password" sx={{width:'100%'}} required />
+      </Box>
       {data && data.error && <div>{data.error}</div>}
       {actionButtons}
     </Form>
@@ -70,7 +71,7 @@ export async function action({ request, params }) {
     case 500:
       throw json({ message: 'An error occurred. Please try again and contact us if the error continues. Thank you!' }, { status: 500 });
     default:
-      //do something
+    //do something
   }
 
   if (!response.ok) {

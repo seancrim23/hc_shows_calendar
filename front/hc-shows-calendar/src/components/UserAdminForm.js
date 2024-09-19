@@ -1,6 +1,10 @@
 //form for admins to create users - really only need an email field
 //needs to be token protected
 import { useActionData, useNavigation, Form, json, redirect } from "react-router-dom";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import InputLabel from "@mui/material/InputLabel";
+import TextField from "@mui/material/TextField";
 
 function UserAdminForm({ type }) {
     const data = useActionData();
@@ -10,9 +14,9 @@ function UserAdminForm({ type }) {
   
     var actionButtons = (
       <div>
-        <button disabled={isSubmitting}>
+        <Button variant="outlined" sx={{ width: '100%', marginBottom: '5px'}} disabled={isSubmitting}>
           {isSubmitting ? 'Submitting...' : (type === 'setup' ? 'Create User' : 'Reset Password')}
-        </button>
+        </Button>
       </div>
     );
 
@@ -21,10 +25,8 @@ function UserAdminForm({ type }) {
         {data && data.errors && <ul>
           {Object.values(data.errors).map(err => <li key={err}>{err}</li>)}
         </ul>}
-        <p>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" name="email" required />
-        </p>
+        <InputLabel htmlFor="email">Email</InputLabel>
+        <TextField id="email" type="text" name="email" sx={{width:'100%', paddingBottom:'10px'}}  required />
         <input type="hidden" name="type" id="type" value={type} />
         {actionButtons}
       </Form>
