@@ -35,9 +35,9 @@ function ShowForm({ method, show }) {
 
     return (
         <Card sx={{ marginTop: 1.5, marginBottom: 1.5 }}>
-            <Box sx={{ marginLeft: 1.5, marginBottom: 1.5, marginTop: 1.5 }}>
+            <Box sx={{ margin:1.5 }}>
                 <Typography variant='h4' sx={{ textAlign: 'center' }}>{showSubmitMethod} a Show</Typography>
-                <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
+                <Divider sx={{ marginTop: 1.5, marginBottom: 1.5}} />
                 <Formik
                     initialValues={{
                         date: show && show.date ? dayjs(show.date) : dayjs(),
@@ -54,7 +54,7 @@ function ShowForm({ method, show }) {
                     }}>
                     {props => (
                         <Form onSubmit={props.handleSubmit}>
-                            <h3>Date</h3>
+                            <Typography variant="h6">Date</Typography>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DemoContainer components={['DatePicker']}>
                                     <DatePicker
@@ -63,11 +63,12 @@ function ShowForm({ method, show }) {
                                         label="Date"
                                         value={props.values.date}
                                         onChange={(value) => props.setFieldValue("date", value, true)}
+                                        sx={{ width: '100%' }}
                                     />
                                 </DemoContainer>
                             </LocalizationProvider>
 
-                            <h3>Time</h3>
+                            <Typography variant="h6">Time</Typography>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DemoContainer components={['TimePicker']}>
                                     <TimePicker
@@ -76,11 +77,12 @@ function ShowForm({ method, show }) {
                                         label="Time"
                                         value={props.values.time}
                                         onChange={(value) => props.setFieldValue("time", value, true)}
+                                        sx={{ width: '100%' }}
                                     />
                                 </DemoContainer>
                             </LocalizationProvider>
 
-                            <h3>Venue</h3>
+                            <Typography variant="h6">Venue</Typography>
                             <TextField
                                 id="venue"
                                 name="venue"
@@ -88,12 +90,13 @@ function ShowForm({ method, show }) {
                                 value={props.values.venue}
                                 onBlur={props.handleBlur}
                                 onChange={props.handleChange}
+                                sx={{ width: '100%' }}
                             />
                             {props.touched.venue && props.errors.venue ? (
                                 <div>{props.errors.venue}</div>
                             ) : null}
 
-                            <h3>Address</h3>
+                            <Typography variant="h6">Address</Typography>
                             <TextField
                                 id="address"
                                 name="address"
@@ -101,18 +104,20 @@ function ShowForm({ method, show }) {
                                 value={props.values.address}
                                 onBlur={props.handleBlur}
                                 onChange={props.handleChange}
+                                sx={{ width: '100%' }}
                             />
                             {props.touched.address && props.errors.address ? (
                                 <div>{props.errors.address}</div>
                             ) : null}
 
-                            <h3>State</h3>
+                            <Typography variant="h6">State</Typography>
                             <Select
                                 id="state"
                                 name="state"
                                 label="State"
                                 value={props.values.state}
                                 onChange={props.handleChange}
+                                sx={{ width: '100%' }}
                             >
                                 {
                                     Object.keys(statesMapping).map((key, i) => (
@@ -124,7 +129,7 @@ function ShowForm({ method, show }) {
                                 <div>{props.errors.state}</div>
                             ) : null}
 
-                            <h3>City</h3>
+                            <Typography variant="h6">City</Typography>
                             <TextField
                                 id="city"
                                 name="city"
@@ -132,12 +137,13 @@ function ShowForm({ method, show }) {
                                 value={props.values.city}
                                 onBlur={props.handleBlur}
                                 onChange={props.handleChange}
+                                sx={{ width: '100%' }}
                             />
                             {props.touched.city && props.errors.city ? (
                                 <div>{props.errors.city}</div>
                             ) : null}
 
-                            <h3>Lineup</h3>
+                            <Typography variant="h6">Lineup</Typography>
                             <FieldArray
                                 id="lineup"
                                 name="lineup"
@@ -145,9 +151,9 @@ function ShowForm({ method, show }) {
                                     <div>
                                         {props.values.lineup.map((band, index) => (
                                             <div key={index}>
-                                                <TextField sx={{ marginBottom: 1 }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
+                                                <TextField sx={{ marginBottom: 1, width:'85%' }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
                                                 <Button
-                                                    sx={{ marginLeft: 1 }}
+                                                    sx={{ marginLeft: 1, height:'55px' }}
                                                     type="button"
                                                     color="secondary"
                                                     variant="outlined"
@@ -160,14 +166,14 @@ function ShowForm({ method, show }) {
                                                 ) : null}
                                             </div>
                                         ))}
-                                        <Button type="button" variant="outlined" onClick={() => arrayHelpers.push('')}>
+                                        <Button type="button" variant="outlined" sx={{marginTop:'5px'}} onClick={() => arrayHelpers.push('')}>
                                             Add a band
                                         </Button>
                                     </div>
                                 )}
                             />
                             <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
-                            <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained">{showSubmitMethod} Show</Button>
+                            <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained" sx={{width:'100%'}}>{showSubmitMethod} Show</Button>
                         </Form>
                     )}
                 </Formik>

@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { useSubmit } from "react-router-dom";
 import { format } from 'date-fns';
+import Box from "@mui/material/Box";
 
 function Show({ show, canEdit }) {
     const submit = useSubmit();
@@ -33,10 +34,12 @@ function Show({ show, canEdit }) {
                         {show.venue + " - " + show.city + ", " + show.state}
                     </Typography>
                     {canEdit &&
-                        <menu>
-                            <Button underline="none" component="button" color="inherit" href={`/shows/${show.id}/edit`}>Edit</Button>
-                            <Button underline="none" component="button" color="inherit" onClick={() => startDeleteHandler(show.id)}>Delete</Button>
-                        </menu>}
+                        <Box sx={{
+                            paddingTop:'5px'
+                        }}>
+                            <Button variant="outlined" color="inherit" sx={{marginRight:'3px'}} href={`/shows/${show.id}/edit`}>Edit</Button>
+                            <Button variant="outlined" color="inherit" onClick={() => startDeleteHandler(show.id)}>Delete</Button>
+                        </Box>}
                 </CardContent>
             </Card>
         </>

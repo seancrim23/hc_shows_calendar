@@ -3,6 +3,9 @@ import { Await, defer, json, useRouteLoaderData } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { Suspense } from "react";
 import { getAuthToken } from "../util/auth";
+import GridWrapper from "../components/common/GridWrapper/GridWrapper";
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 function UserShowListPage() {
     const { showList } = useRouteLoaderData("user-show-list");
@@ -13,15 +16,42 @@ function UserShowListPage() {
     //TODO separate shows into upcoming and past
     //TODO show upcoming and past are in closed section
     return (
-        <>
-            <h4>User Show List</h4>
-            <Button underline="none" component="button" color="inherit" href={`/shows/new`}>Create New Show</Button>
-            <Suspense fallback={<p>Loading...</p>}>
-                <Await resolve={showList}>
-                    {loadedShowList => <ShowList shows={loadedShowList} noShowsMessage={"You haven't created any shows yet... add a show."} isPromoter={isPromoter} />}
-                </Await>
-            </Suspense>
-        </>
+        <GridWrapper>
+            <Grid container item xs={12} sx={{
+                flexGrow: 1,
+                backgroundColor: '#f5f5f5',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                paddingBottom: '10px'
+            }}>
+                <Grid item xs={9}>
+                    <Typography variant="h4" sx={{
+                        paddingTop: '10px'
+                        }}>User Show List</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                    <Button sx={{
+                        marginTop:'13px',
+                        width:'100%'
+                    }} variant="outlined" component="button" color="inherit" href={`/shows/new`}>Create New Show</Button>
+                </Grid>
+            </Grid>
+            <Grid container item xs={12} sx={{
+                flexGrow: 1,
+                backgroundColor: '#FFFFFF',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                height: 'auto'
+            }}>
+                <Grid item xs={12}>
+                    <Suspense fallback={<p>Loading...</p>}>
+                        <Await resolve={showList}>
+                            {loadedShowList => <ShowList shows={loadedShowList} noShowsMessage={"You haven't created any shows yet... add a show."} isPromoter={isPromoter} />}
+                        </Await>
+                    </Suspense>
+                </Grid>
+            </Grid>
+        </GridWrapper>
     )
 }
 
@@ -36,10 +66,10 @@ async function loadUserShowList() {
     const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         },
-      });
+    });
 
     if (!response.ok) {
         throw json({ message: "could not find shows for the user." }, { status: 500 });
