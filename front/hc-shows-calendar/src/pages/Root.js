@@ -32,7 +32,7 @@ function RootLayout() {
     }, [token, submit]);
 
     return (
-        <Box sx={{ background: '#636363', height: '100vh' }}>
+        <Box sx={{ background: '#636363', height:'100vh', backgroundSize: 'auto auto' }}>
             <Container maxWidth="lg">
                 <Header loggedIn={loggedIn} />
                 <Grid

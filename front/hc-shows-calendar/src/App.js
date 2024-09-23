@@ -14,6 +14,7 @@ import { action as authorizeAction } from './components/AuthForm';
 import { action as sendAdminEmailAction } from './components/UserAdminForm';
 import { action as resetAuthAction } from './components/AuthResetForm';
 import { action as newUserAction } from './components/UserForm';
+import { action as logoutAction } from './components/Logout';
 import AuthPage from './pages/Auth';
 import { tokenLoader, checkAuthLoader } from './util/auth';
 import LogoutPage from './pages/Logout';
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
       {
         path: 'logout',
         element: <LogoutPage />,
+        action: logoutAction,
       },
       {
         path: 'reset',

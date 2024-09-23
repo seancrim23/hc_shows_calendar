@@ -15,3 +15,10 @@ function Logout() {
 }
 
 export default Logout;
+
+//this does not seem like a good way to do this
+//TODO look into better way if there is one
+export function action() {
+    console.log("logout action is firing");
+    return "logout :)"
+}
