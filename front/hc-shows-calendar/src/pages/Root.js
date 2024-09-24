@@ -30,7 +30,7 @@ function RootLayout() {
     }, [token, submit]);
 
     return (
-        <Box sx={{ background: '#636363', display:'flex', flexDirection:'column', height:'100%'}}>
+        <Box sx={{ background: '#636363', display:'flex', flexDirection:'column', minHeight:'100vh'}}>
             <Container sx={{flexGrow:1}} maxWidth="lg">
                 <Header loggedIn={loggedIn} />
                 <Grid
