@@ -46,10 +46,7 @@ function ShowFilters({ setShowList, setHasError }) {
         if (filters.city && filters.city !== '') {
             url = url + '&city=' + encodeURIComponent(filters.city);
         }
-        //if state is not empty
-        //append &
-        console.log("url: " + url);
-        console.log("getting shows with filters: " + JSON.stringify(filters));
+
         try {
             const response = await fetch(url, {
                 method: 'GET',

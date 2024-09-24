@@ -1,17 +1,16 @@
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import hc_shows_calendar_logo from "../assets/hardcore_shows_calendar.png";
-import Grid from '@mui/material/Grid';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 
 function Header({ loggedIn }) {
   var headeroptions = loggedIn ? [
-    <Link href="/user/profile" color="inherit" underline="hover">Profile</Link>,
-    <Link href="/user/shows" color="inherit" underline="hover">Shows</Link>,
-    <Link href="/logout" color="inherit" underline="hover">Logout</Link>,
+    <Link key="profile" href="/user/profile" color="inherit" underline="hover">Profile</Link>,
+    <Link key="user shows" href="/user/shows" color="inherit" underline="hover">Shows</Link>,
+    <Link key="logout" href="/logout" color="inherit" underline="hover">Logout</Link>,
   ] : [
-    <Link href="/login" color="inherit" underline="hover">Login</Link>,
+    <Link key="login" href="/login" color="inherit" underline="hover">Login</Link>,
   ]
 
   return (

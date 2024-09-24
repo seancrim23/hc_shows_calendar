@@ -1,11 +1,7 @@
 import React from 'react'
 import Grid from '@mui/material/Grid';
-import { gridWrapperStyles } from './styles';
 
 const GridWrapper = ({ children }) => {
-
-    console.log(children)
-
     return (
         <Grid container item direction="column" sx={{ 
             flexGrow: 1,

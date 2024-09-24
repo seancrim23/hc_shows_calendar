@@ -22,7 +22,6 @@ function NewShowPage() {
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 paddingBottom: '10px',
-                width: '50%'
             }}>
                 <Grid item xs={12}>
                     <Typography variant='h4' sx={{ textAlign: 'center' }}>Create a Show</Typography>
@@ -30,9 +29,7 @@ function NewShowPage() {
                 <Grid item xs={12}>
                     <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
                 </Grid>
-                <Grid item xs={12}>
-                    <ShowForm method='POST' />
-                </Grid>
+                <ShowForm method='POST' />
             </Grid>
         </GridWrapper>
     )

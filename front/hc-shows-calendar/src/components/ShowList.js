@@ -11,7 +11,7 @@ function ShowList({ shows, noShowsMessage, isPromoter }) {
     return (
         <>
             {(shows.length === 0) ? <Grid item xs={12} sx={{padding: '5px'}}><Typography variant="subtitle1">{noShowsMessage}</Typography></Grid> : shows.map((show) => (
-                <Grid item xs={12}><Show key={show.id} show={show} canEdit={isPromoter} /></Grid>
+                <Grid item key={show.id} xs={12}><Show key={show.id} show={show} canEdit={isPromoter} /></Grid>
             ))}
         </>
     )

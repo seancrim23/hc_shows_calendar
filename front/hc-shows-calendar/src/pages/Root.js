@@ -12,8 +12,6 @@ function RootLayout() {
     const loggedIn = token !== null;
     const submit = useSubmit();
 
-    console.log(token);
-
     useEffect(() => {
         if (!token) {
             return;
@@ -32,8 +30,8 @@ function RootLayout() {
     }, [token, submit]);
 
     return (
-        <Box sx={{ background: '#636363', height:'100vh', backgroundSize: 'auto auto' }}>
-            <Container maxWidth="lg">
+        <Box sx={{ background: '#636363', display:'flex', flexDirection:'column', height:'100%'}}>
+            <Container sx={{flexGrow:1}} maxWidth="lg">
                 <Header loggedIn={loggedIn} />
                 <Grid
                     container
@@ -46,7 +44,6 @@ function RootLayout() {
                 </Grid>
                 <Footer />
             </Container>
-
         </Box>
     );
 }

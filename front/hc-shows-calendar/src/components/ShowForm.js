@@ -17,7 +17,8 @@ import statesMapping from '../assets/StatesMapping.json';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { getAuthToken } from '../util/auth';
-
+import Box from "@mui/material/Box";
+import { Grid } from '@mui/material';
 
 function ShowForm({ method, show }) {
     const submit = useSubmit();
@@ -31,6 +32,9 @@ function ShowForm({ method, show }) {
         lineup: Yup.array(Yup.string().required(REQUIRED_FIELD)).min(1),
     })
 
+    //TODO adding grid config seems like a hacky way to do this...
+    //research and see if better way to integrate grid with forms
+    //and determine more standard approach
     return (
         <Formik
             initialValues={{
@@ -48,126 +52,148 @@ function ShowForm({ method, show }) {
             }}>
             {props => (
                 <Form onSubmit={props.handleSubmit}>
-                    <Typography variant="h6">Date</Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={['DatePicker']}>
-                            <DatePicker
-                                id="date"
-                                name="date"
-                                label="Date"
-                                value={props.values.date}
-                                onChange={(value) => props.setFieldValue("date", value, true)}
-                                sx={{ width: '100%' }}
-                            />
-                        </DemoContainer>
-                    </LocalizationProvider>
+                    <Box sx={{ paddingBottom: '10px' }}>
+                        <Grid container item>
+                            <Grid item xs={12}>
+                                <Typography variant="h6">Date</Typography>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DemoContainer components={['DatePicker']}>
+                                        <DatePicker
+                                            id="date"
+                                            name="date"
+                                            label="Date"
+                                            value={props.values.date}
+                                            onChange={(value) => props.setFieldValue("date", value, true)}
+                                            sx={{ width: '100%' }}
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="h6">Time</Typography>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DemoContainer components={['TimePicker']}>
+                                        <TimePicker
+                                            id="time"
+                                            name="time"
+                                            label="Time"
+                                            value={props.values.time}
+                                            onChange={(value) => props.setFieldValue("time", value, true)}
+                                            sx={{ width: '100%' }}
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="h6">Venue</Typography>
+                                <TextField
+                                    id="venue"
+                                    name="venue"
+                                    label="Venue"
+                                    value={props.values.venue}
+                                    onBlur={props.handleBlur}
+                                    onChange={props.handleChange}
+                                    sx={{ width: '100%' }}
+                                />
+                                {props.touched.venue && props.errors.venue ? (
+                                    <div>{props.errors.venue}</div>
+                                ) : null}
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="h6">Address</Typography>
+                                <TextField
+                                    id="address"
+                                    name="address"
+                                    label="Address"
+                                    value={props.values.address}
+                                    onBlur={props.handleBlur}
+                                    onChange={props.handleChange}
+                                    sx={{ width: '100%' }}
+                                />
+                                {props.touched.address && props.errors.address ? (
+                                    <div>{props.errors.address}</div>
+                                ) : null}
+                            </Grid>
+                            <Grid item xs={12}>
 
-                    <Typography variant="h6">Time</Typography>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={['TimePicker']}>
-                            <TimePicker
-                                id="time"
-                                name="time"
-                                label="Time"
-                                value={props.values.time}
-                                onChange={(value) => props.setFieldValue("time", value, true)}
-                                sx={{ width: '100%' }}
-                            />
-                        </DemoContainer>
-                    </LocalizationProvider>
+                                <Typography variant="h6">State</Typography>
+                                <Select
+                                    id="state"
+                                    name="state"
+                                    label="State"
+                                    value={props.values.state}
+                                    onChange={props.handleChange}
+                                    sx={{ width: '100%' }}
+                                >
+                                    {
+                                        Object.keys(statesMapping).map((key, i) => (
+                                            <MenuItem key={i} value={key}>{key}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                                {props.touched.state && props.errors.state ? (
+                                    <div>{props.errors.state}</div>
+                                ) : null}
+                            </Grid>
+                            <Grid item xs={12}>
 
-                    <Typography variant="h6">Venue</Typography>
-                    <TextField
-                        id="venue"
-                        name="venue"
-                        label="Venue"
-                        value={props.values.venue}
-                        onBlur={props.handleBlur}
-                        onChange={props.handleChange}
-                        sx={{ width: '100%' }}
-                    />
-                    {props.touched.venue && props.errors.venue ? (
-                        <div>{props.errors.venue}</div>
-                    ) : null}
+                                <Typography variant="h6">City</Typography>
+                                <TextField
+                                    id="city"
+                                    name="city"
+                                    label="City"
+                                    value={props.values.city}
+                                    onBlur={props.handleBlur}
+                                    onChange={props.handleChange}
+                                    sx={{ width: '100%' }}
+                                />
+                                {props.touched.city && props.errors.city ? (
+                                    <div>{props.errors.city}</div>
+                                ) : null}
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="h6">Lineup</Typography>
+                                <FieldArray
+                                    id="lineup"
+                                    name="lineup"
+                                    render={arrayHelpers => (
+                                        <div>
+                                            {props.values.lineup.map((band, index) => (
+                                                <div key={index}>
+                                                    <TextField sx={{ marginBottom: 1, width: '92%' }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
+                                                    <Button
+                                                        sx={{ marginLeft: 1, height: '55px' }}
+                                                        type="button"
+                                                        color="secondary"
+                                                        variant="outlined"
+                                                        onClick={() => arrayHelpers.remove(index)}
+                                                    >
+                                                        X
+                                                    </Button>
+                                                    {props.touched.lineup && props.errors.lineup ? (
+                                                        <div>{props.errors.lineup[index]}</div>
+                                                    ) : null}
+                                                </div>
+                                            ))}
+                                            <Button type="button" variant="outlined" sx={{ marginTop: '5px' }} onClick={() => arrayHelpers.push('')}>
+                                                Add a band
+                                            </Button>
+                                        </div>
+                                    )}
+                                />
+                            </Grid>
 
-                    <Typography variant="h6">Address</Typography>
-                    <TextField
-                        id="address"
-                        name="address"
-                        label="Address"
-                        value={props.values.address}
-                        onBlur={props.handleBlur}
-                        onChange={props.handleChange}
-                        sx={{ width: '100%' }}
-                    />
-                    {props.touched.address && props.errors.address ? (
-                        <div>{props.errors.address}</div>
-                    ) : null}
+                            <Grid item xs={12}>
 
-                    <Typography variant="h6">State</Typography>
-                    <Select
-                        id="state"
-                        name="state"
-                        label="State"
-                        value={props.values.state}
-                        onChange={props.handleChange}
-                        sx={{ width: '100%' }}
-                    >
-                        {
-                            Object.keys(statesMapping).map((key, i) => (
-                                <MenuItem key={i} value={key}>{key}</MenuItem>
-                            ))
-                        }
-                    </Select>
-                    {props.touched.state && props.errors.state ? (
-                        <div>{props.errors.state}</div>
-                    ) : null}
+                                <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
+                            </Grid>
+                            <Grid item xs={12}>
 
-                    <Typography variant="h6">City</Typography>
-                    <TextField
-                        id="city"
-                        name="city"
-                        label="City"
-                        value={props.values.city}
-                        onBlur={props.handleBlur}
-                        onChange={props.handleChange}
-                        sx={{ width: '100%' }}
-                    />
-                    {props.touched.city && props.errors.city ? (
-                        <div>{props.errors.city}</div>
-                    ) : null}
+                                <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained" sx={{ width: '100%' }}>{showSubmitMethod} Show</Button>
+                            </Grid>
 
-                    <Typography variant="h6">Lineup</Typography>
-                    <FieldArray
-                        id="lineup"
-                        name="lineup"
-                        render={arrayHelpers => (
-                            <div>
-                                {props.values.lineup.map((band, index) => (
-                                    <div key={index}>
-                                        <TextField sx={{ marginBottom: 1, width: '85%' }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
-                                        <Button
-                                            sx={{ marginLeft: 1, height: '55px' }}
-                                            type="button"
-                                            color="secondary"
-                                            variant="outlined"
-                                            onClick={() => arrayHelpers.remove(index)}
-                                        >
-                                            X
-                                        </Button>
-                                        {props.touched.lineup && props.errors.lineup ? (
-                                            <div>{props.errors.lineup[index]}</div>
-                                        ) : null}
-                                    </div>
-                                ))}
-                                <Button type="button" variant="outlined" sx={{ marginTop: '5px' }} onClick={() => arrayHelpers.push('')}>
-                                    Add a band
-                                </Button>
-                            </div>
-                        )}
-                    />
-                    <Divider sx={{ marginTop: 1.5, marginBottom: 1.5 }} />
-                    <Button disabled={!props.isValid || (Object.keys(props.touched).length === 0 && props.touched.constructor === Object)} type="submit" color="primary" variant="contained" sx={{ width: '100%' }}>{showSubmitMethod} Show</Button>
+                        </Grid>
+                    </Box>
                 </Form>
             )}
         </Formik>
