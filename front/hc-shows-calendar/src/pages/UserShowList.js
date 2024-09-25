@@ -25,12 +25,12 @@ function UserShowListPage() {
                 paddingRight: '20px',
                 paddingBottom: '10px'
             }}>
-                <Grid item xs={9}>
+                <Grid item xs={12} sm={12} md={9} lg={9} xl={9}>
                     <Typography variant="h4" sx={{
-                        paddingTop: '10px'
+                        paddingTop: '10px',
                         }}>User Show List</Typography>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={12} md={3} lg={3} xl={3}>
                     <Button sx={{
                         marginTop:'13px',
                         width:'100%'
@@ -41,7 +41,10 @@ function UserShowListPage() {
                 flexGrow: 1,
                 backgroundColor: '#FFFFFF',
                 borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-                height: 'auto'
+                height: 'auto',
+                maxHeight:'700px',
+                overflow:'hidden',
+                overflowY:'scroll'
             }}>
                 <Grid item xs={12}>
                     <Suspense fallback={<p>Loading...</p>}>

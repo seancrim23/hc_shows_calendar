@@ -1,5 +1,4 @@
 import { useActionData, useNavigation, json, redirect, useSubmit } from "react-router-dom";
-import InputLabel from "@mui/material/InputLabel";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -7,7 +6,6 @@ import Typography from "@mui/material/Typography";
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { REQUIRED_FIELD } from "../util/Constants";
-import Input from "@mui/material/Input";
 
 //TODO needs material UI
 //maybe formik?
@@ -45,7 +43,9 @@ function AuthForm({ method }) {
       {props => (
         <Form onSubmit={props.handleSubmit}>
           <Box sx={{ paddingBottom: '10px' }}>
-            <Typography sx={{ textAlign: 'center', paddingTop: '10px' }} variant="h4" gutterBottom>Login</Typography>
+            <Typography sx={{ textAlign: 'center',
+               paddingTop: '10px',
+               fontSize:{xs:'26px', sm:'26px', md:'34px', lg:'34px', xl:'34px'} }} variant="h4" gutterBottom>Login</Typography>
             <TextField
               id="username"
               label="Username"

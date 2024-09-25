@@ -3,9 +3,7 @@ import ShowList from "../../components/ShowList"
 import ShowFilters from "../../components/ShowFilters";
 import GridWrapper from "../../components/common/GridWrapper/GridWrapper";
 import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { showFilterStyles, showListStyles } from "./styles";
 
 function HomePage() {
     const [showList, setShowList] = useState([]);
@@ -34,7 +32,10 @@ function HomePage() {
                 flexGrow: 1,
                 backgroundColor: '#FFFFFF',
                 borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-                height: 'auto'
+                height: 'auto',
+                maxHeight:'700px',
+                overflow:'hidden',
+                overflowY:'scroll'
             }}>
                 {hasError ? <Grid item xs={12}><Typography variant="h6">Error retrieving shows, please try filtering again (idk if it still doesnt work contact me?)</Typography></Grid> :
                     <ShowList shows={showList} hasError={hasError} isPromoter={false} noShowsMessage={"No shows at the moment! Choose filters to find shows near you!"} />

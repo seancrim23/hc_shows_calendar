@@ -160,7 +160,7 @@ function ShowForm({ method, show }) {
                                         <div>
                                             {props.values.lineup.map((band, index) => (
                                                 <div key={index}>
-                                                    <TextField sx={{ marginBottom: 1, width: '92%' }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
+                                                    <TextField sx={{ marginBottom: 1, width:{xs:'70%',sm:'70%', md:'90%',lg:'93%', xl:'93%'}  }} name={`lineup.${index}`} onBlur={props.handleBlur} value={band} onChange={props.handleChange} />
                                                     <Button
                                                         sx={{ marginLeft: 1, height: '55px' }}
                                                         type="button"
