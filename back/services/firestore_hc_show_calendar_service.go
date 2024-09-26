@@ -60,25 +60,31 @@ func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]st
 	var shows []models.Show
 	var q firestore.Query
 	var iter *firestore.DocumentIterator
-	//is there a better way to do this?
-	//TODO dynamic search to get all shows a week out / two weeks out / a month out / etc
-	//currently hard coded to only a week out
+	//TODO clean up query building its really gross
 	currentDate := time.Now()
-	oneWeekOutDate := currentDate.AddDate(0, 0, 7)
+	dateRangeDate := time.Now()
+	if val, ok := showQueryFilters["date_range"]; ok {
+		dateRangeDate = currentDate.AddDate(0, 0, utils.DateRangeMapping[val])
+	}
 	collection := f.database.Collection(utils.SHOW_COLLECTION)
 	if len(showQueryFilters) == 0 {
-		iter = collection.OrderBy("date", firestore.Asc).Where("date", "<=", oneWeekOutDate).Documents(f.ctx)
+		iter = collection.OrderBy("date", firestore.Asc).Documents(f.ctx)
 	} else {
 		index := 0
 		for k, v := range showQueryFilters {
-			if index == 0 {
-				q = collection.Where(k, "==", v)
-			} else {
-				q = q.Where(k, "==", v)
+			if k != "date_range" {
+				if index == 0 {
+					q = collection.Where(k, "==", v)
+				} else {
+					q = q.Where(k, "==", v)
+				}
+				index++
 			}
-			index++
 		}
-		iter = q.Where("date", "<=", oneWeekOutDate).OrderBy("date", firestore.Asc).Documents(f.ctx)
+		if _, ok := showQueryFilters["date_range"]; ok {
+			q = q.Where("date", "<=", dateRangeDate).Where("date", ">=", currentDate)
+		}
+		iter = q.OrderBy("date", firestore.Asc).Documents(f.ctx)
 	}
 	for {
 		s := models.Show{}
