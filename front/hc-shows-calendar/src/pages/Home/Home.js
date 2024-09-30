@@ -24,7 +24,7 @@ function HomePage() {
                         paddingTop: { xs: '4px', sm: '6px', md: '6px', lg: '6px', xl: '8px' },
                         paddingBottom: '5px',
                         fontSize: { xs: 12, sm: 18, md: 18, lg: 18, xl: 20 }
-                    }}>Choose a state and city to find shows in...</Typography>
+                    }}>Choose a state and city to find shows in for the upcoming week...</Typography>
                 </Grid>
                 <ShowFilters setShowList={setShowList} setHasError={setHasError} />
             </Grid>

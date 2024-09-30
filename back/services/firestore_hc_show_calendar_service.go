@@ -163,8 +163,6 @@ func buildShowFirestoreUpdateData(show models.Show) []firestore.Update {
 	showTempGenericMap := structs.Map(show)
 	for i, v := range showTempGenericMap {
 		if strings.ToLower(i) != "id" && strings.ToLower(i) != "promoter" {
-			//do we need any protection here?
-			//honestly don't think it matters much if a user updates their own show with junk
 			fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
 		}
 	}

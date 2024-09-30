@@ -20,8 +20,14 @@ function UserForm() {
     email: Yup.string().required(REQUIRED_FIELD),
     username: Yup.string().required(REQUIRED_FIELD),
     //TODO expand password validation
-    password: Yup.string().required(REQUIRED_FIELD),
-    confirmPassword: Yup.string().required(REQUIRED_FIELD),
+    password: Yup.string().required(REQUIRED_FIELD)
+      .min(8, "Must be 8 characters or more")
+      .matches(/[a-z]+/, "One lowercase character")
+      .matches(/[A-Z]+/, "One uppercase character")
+      .matches(/[@$!%*#?&]+/, "One special character")
+      .matches(/\d+/, "One number"),
+    confirmPassword: Yup.string().required(REQUIRED_FIELD)
+      .oneOf([Yup.ref('password'), null], 'password and confirm should match'),
     code: Yup.string().required(REQUIRED_FIELD),
   })
 
@@ -63,7 +69,7 @@ function UserForm() {
               sx={{ width: '100%' }}
             />
             {props.touched.email && props.errors.email ? (
-              <div>{props.errors.email}</div>
+              <Typography sx={{ color: '#FF0000' }} variant="subtitle2">{props.errors.email}</Typography>
             ) : null}
             <Typography variant="h6">Username</Typography>
             <TextField
@@ -76,33 +82,35 @@ function UserForm() {
               sx={{ width: '100%' }}
             />
             {props.touched.username && props.errors.username ? (
-              <div>{props.errors.username}</div>
+              <Typography sx={{ color: '#FF0000' }} variant="subtitle2">{props.errors.username}</Typography>
             ) : null}
             <Typography variant="h6">Password</Typography>
             <TextField
               id="password"
               name="password"
               label="Password"
+              type="password"
               value={props.values.password}
               onBlur={props.handleBlur}
               onChange={props.handleChange}
               sx={{ width: '100%' }}
             />
             {props.touched.password && props.errors.password ? (
-              <div>{props.errors.password}</div>
+              <Typography sx={{ color: '#FF0000' }} variant="subtitle2">{props.errors.password}</Typography>
             ) : null}
             <Typography variant="h6">Confirm Password</Typography>
             <TextField
               id="confirmPassword"
               name="confirmPassword"
               label="Confirm Password"
+              type="password"
               value={props.values.confirmPassword}
               onBlur={props.handleBlur}
               onChange={props.handleChange}
               sx={{ width: '100%' }}
             />
             {props.touched.confirmPassword && props.errors.confirmPassword ? (
-              <div>{props.errors.confirmPassword}</div>
+              <Typography sx={{ color: '#FF0000' }} variant="subtitle2">{props.errors.confirmPassword}</Typography>
             ) : null}
             <Typography variant="h6">Code</Typography>
             <TextField
@@ -115,7 +123,7 @@ function UserForm() {
               sx={{ width: '100%' }}
             />
             {props.touched.code && props.errors.code ? (
-              <div>{props.errors.code}</div>
+              <Typography sx={{ color: '#FF0000' }} variant="subtitle2">{props.errors.code}</Typography>
             ) : null}
           </Box>
           {actionButtons}

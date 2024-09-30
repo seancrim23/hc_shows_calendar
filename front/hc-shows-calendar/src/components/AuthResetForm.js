@@ -18,8 +18,14 @@ function AuthResetForm() {
   const validateSchema = Yup.object().shape({
     email: Yup.string().required(REQUIRED_FIELD),
     //TODO expand password validation
-    password: Yup.string().required(REQUIRED_FIELD),
-    confirmPassword: Yup.string().required(REQUIRED_FIELD),
+    password: Yup.string().required(REQUIRED_FIELD)
+      .min(8, "Must be 8 characters or more")
+      .matches(/[a-z]+/, "One lowercase character")
+      .matches(/[A-Z]+/, "One uppercase character")
+      .matches(/[@$!%*#?&]+/, "One special character")
+      .matches(/\d+/, "One number"),
+    confirmPassword: Yup.string().required(REQUIRED_FIELD)
+      .oneOf([Yup.ref('password'), null], 'password and confirm should match'),
     code: Yup.string().required(REQUIRED_FIELD),
   })
 

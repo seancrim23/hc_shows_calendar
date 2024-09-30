@@ -38,7 +38,7 @@ function ShowFilters({ setShowList, setHasError }) {
     //TODO do i need to do anything to protect query params?
     async function fetchShows(filters) {
         //state at least will always be included in this request
-        let url = "http://localhost:8080/show?state=" + encodeURIComponent(filters.state);
+        let url = "http://localhost:8080/show?state=" + encodeURIComponent(filters.state) + "&date_range=week";
         //let url = process.env.HC_CALENDAR_APP_BACK_URL + '/show?state=' + filters.state;
 
         //if filters city exists and is not empty...
@@ -80,7 +80,9 @@ function ShowFilters({ setShowList, setHasError }) {
                         onChange={handleStateChange}
                     >
                         {
-                            Object.keys(statesMapping).map((key, i) => (
+                            Object.keys(statesMapping)
+                            .sort((a, b) => a.localeCompare(b))
+                            .map((key, i) => (
                                 <MenuItem sx={{
                                 }} key={i} value={key}>{key}</MenuItem>
                             ))

@@ -21,7 +21,7 @@ function UserDetailPage() {
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 paddingBottom: '10px',
-                width: '50%'
+                width: {xs: '100%', sm: '80%', md: '50%', lg: '50%', xl: '50%'}
             }}>
                 <Grid item xs={12}>
                     <Suspense fallback={<p>Loading...</p>}>

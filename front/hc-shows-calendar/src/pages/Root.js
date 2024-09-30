@@ -6,6 +6,8 @@ import { useEffect } from 'react';
 import { getTokenDuration } from '../util/auth';
 import { Box } from '@mui/material';
 import Container from '@mui/material/Container';
+import hc_shows_calendar_bg from "../assets/hc_shows_calendar_yot_small.png";
+
 
 function RootLayout() {
     const token = useRouteLoaderData('root');
@@ -30,7 +32,7 @@ function RootLayout() {
     }, [token, submit]);
 
     return (
-        <Box sx={{ background: '#636363', display:'flex', flexDirection:'column', minHeight:'100vh'}}>
+        <Box sx={{ backgroundImage: `url(${hc_shows_calendar_bg})`, display:'flex', flexDirection:'column', minHeight:'100vh'}}>
             <Container sx={{flexGrow:1}} maxWidth="lg">
                 <Header loggedIn={loggedIn} />
                 <Grid
