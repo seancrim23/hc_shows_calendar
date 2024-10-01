@@ -66,9 +66,6 @@ func (g *GomailHcShowCalendarEmailService) SendMail(mailReq *Mail) error {
 	return nil
 }
 
-// TODO do i need this AND createmail?
-// this creates an actual mail object
-// createmail creates the gomail specific email to be sent...
 func (g *GomailHcShowCalendarEmailService) NewMail(from string, to []string, subject string, mailType MailType, data *MailData) *Mail {
 	return &Mail{
 		from:    from,
@@ -90,6 +87,7 @@ func buildEmailBody(templatePath string, mailData MailData) (string, error) {
 	return body.String(), nil
 }
 
+// TODO refactor templates to come from google cloud file store
 var mailTemplateLocations = map[MailType]string{
 	MailConfirmation: "C:/development/hc_shows_calendar/back/templates/confirm_mail.html",
 	PassReset:        "C:/development/hc_shows_calendar/back/templates/password_reset.html",

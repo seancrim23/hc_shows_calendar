@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
-
-var SECRET_KEY = []byte(os.Getenv(SITE_KEY))
 
 type UserIDKey struct{}
 
@@ -31,7 +28,11 @@ func GenerateToken(userName string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(SECRET_KEY)
+	secret, err := AccessSecretVersion(SECRET_USER_KEY)
+	if err != nil {
+		return "", err
+	}
+	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}
@@ -52,8 +53,6 @@ func WithToken(next http.HandlerFunc) http.HandlerFunc {
 			RespondWithError(w, 400, err.Error())
 			return
 		}
-		//add username to context for use in next
-		fmt.Println(u)
 		ctx := context.WithValue(r.Context(), UserIDKey{}, u)
 		r = r.WithContext(ctx)
 
@@ -63,7 +62,11 @@ func WithToken(next http.HandlerFunc) http.HandlerFunc {
 
 func validateToken(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &TokenCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return SECRET_KEY, nil
+		secret, err := AccessSecretVersion(SECRET_USER_KEY)
+		if err != nil {
+			return "", err
+		}
+		return []byte(secret), nil
 	})
 
 	if err != nil {

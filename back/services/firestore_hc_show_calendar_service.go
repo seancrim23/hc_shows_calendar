@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -55,7 +54,7 @@ func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(
 	return &FirestoreHCShowCalendarService{database: database, ctx: ctx}, closeFunc, nil
 }
 
-// TODO pagination at some point?
+// TODO pagination at some point
 func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]string) (*[]models.Show, error) {
 	var shows []models.Show
 	var q firestore.Query
@@ -121,7 +120,6 @@ func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error
 		fmt.Println(err)
 		return nil, errors.New("error getting show")
 	}
-	fmt.Printf("Document data: %#v\n", s)
 	return &s, nil
 }
 
@@ -149,8 +147,7 @@ func (f *FirestoreHCShowCalendarService) UpdateShow(id string, show models.Show)
 		fmt.Println(err)
 		return nil, errors.New("error updating show")
 	}
-	b, _ := json.Marshal(show)
-	fmt.Println("successful show update: " + string(b))
+
 	return &show, nil
 }
 
@@ -177,7 +174,6 @@ func (f *FirestoreHCShowCalendarService) DeleteShow(id string) error {
 		fmt.Println(err)
 		return errors.New("error deleting show")
 	}
-	fmt.Println("successful delete of id: " + id)
 	return nil
 }
 
@@ -224,7 +220,6 @@ func (f *FirestoreHCShowCalendarService) GetUserShows(username string) (*[]model
 	return &shows, nil
 }
 
-// TODO GENERATE A TOKEN FOR A USER
 func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -243,7 +238,6 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 	return &user, nil
 }
 
-// for an update we're assuming the entire user object is coming from front end
 func (f *FirestoreHCShowCalendarService) UpdateUser(username string, user models.User) (*models.User, error) {
 	fmt.Println("updating values for user " + username)
 	userFirestoreUpdateData := buildUserFirestoreUpdateData(user)
@@ -253,8 +247,7 @@ func (f *FirestoreHCShowCalendarService) UpdateUser(username string, user models
 		fmt.Println(err)
 		return nil, errors.New("error updating user")
 	}
-	b, _ := json.Marshal(user)
-	fmt.Println("successful user update: " + string(b))
+
 	return &user, nil
 }
 
@@ -266,7 +259,6 @@ func buildUserFirestoreUpdateData(user models.User) []firestore.Update {
 	//turn my go struct into something firestore will like
 	userTempGenericMap := structs.Map(user)
 	for i, v := range userTempGenericMap {
-		//maybe add more protection to this?
 		if strings.ToLower(i) != "password" {
 			fireStoreUpdates = append(fireStoreUpdates, firestore.Update{Path: strings.ToLower(i), Value: v})
 		}
@@ -322,7 +314,6 @@ func (f *FirestoreHCShowCalendarService) DeleteUser(username string) error {
 		fmt.Println(err)
 		return errors.New("error deleting user")
 	}
-	fmt.Println("successful delete of id: " + username)
 	return nil
 }
 
@@ -378,7 +369,6 @@ func (f *FirestoreHCShowCalendarService) DeleteAuthObject(email string) error {
 }
 
 func (f *FirestoreHCShowCalendarService) ValidateAuthUser(email string, code string) error {
-	//get verification object
 	dsnap, err := f.database.Collection(utils.VERIFICATION_COLLECTION).Doc(email).Get(f.ctx)
 	if err != nil {
 		fmt.Println("error getting verification")

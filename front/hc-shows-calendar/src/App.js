@@ -20,6 +20,7 @@ import { tokenLoader, checkAuthLoader } from './util/auth';
 import LogoutPage from './pages/Logout';
 import NewUserPage from './pages/NewUser';
 import ErrorPage from './pages/Error';
+import EmailSetupAuthPage from './pages/EmailSetupAuth';
 
 //TODO add auth loader
 const router = createBrowserRouter([
@@ -44,6 +45,11 @@ const router = createBrowserRouter([
       {
         path: 'reset',
         element: <EmailResetAuthPage />,
+        action: sendAdminEmailAction,
+      },
+      {
+        path: 'setup',
+        element: <EmailSetupAuthPage />,
         action: sendAdminEmailAction,
       },
       {

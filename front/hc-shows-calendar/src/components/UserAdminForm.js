@@ -7,6 +7,7 @@ import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { REQUIRED_FIELD } from "../util/Constants";
 import Input from "@mui/material/Input";
+import { getAuthToken } from '../util/auth';
 
 function UserAdminForm({ type }) {
   const data = useActionData();
@@ -74,18 +75,21 @@ export async function action({ request, params }) {
   };
 
   const type = data.get('type');
-  console.log(type);
 
-  //TODO these need to be updated to build the url differently based on env
-  //+ ":" + process.env.REACT_APP_BACK_PORT
-  //somehow get the type out of here
   let url = process.env.REACT_APP_BACK_URL + '/auth/' + type;
+
+  const token = getAuthToken();
+
+  var headers = {
+    'Content-Type': 'application/json',
+  }
+  if (token !== null && token !== 'EXPIRED') {
+    headers.Authorization = 'Bearer ' + token
+  }
 
   const response = await fetch(url, {
     method: method,
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: headers,
     body: JSON.stringify(createUserAuthData),
   });
 
@@ -97,7 +101,5 @@ export async function action({ request, params }) {
     throw json({ message: 'User auth creation failed failed!' }, { status: 500 });
   }
 
-  //i think if it works it should just redirect back to this page?
-  //either that or some admin user landing thing
   return redirect('/');
 }

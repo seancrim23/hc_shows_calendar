@@ -33,16 +33,16 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	r := mux.NewRouter()
 	r.HandleFunc("/health", h.healthCheck).Methods("GET")
 
-	//TODO any way to make these endpoints more clean?
-	//users who are validated should only be able to do create update and delete
+	//TODO look into cleaning up endpoints
 	r.HandleFunc("/show", h.getShows).Methods("GET")
-	r.HandleFunc("/show", utils.WithToken(h.createShow)).Methods("POST") //token
+	r.HandleFunc("/show", utils.WithToken(h.createShow)).Methods("POST")
 	r.HandleFunc("/show/{id}", h.getShow).Methods("GET")
-	r.HandleFunc("/show/{id}", utils.WithToken(h.updateShow)).Methods("PUT")    //token
-	r.HandleFunc("/show/{id}", utils.WithToken(h.deleteShow)).Methods("DELETE") //token
+	r.HandleFunc("/show/{id}", utils.WithToken(h.updateShow)).Methods("PUT")
+	r.HandleFunc("/show/{id}", utils.WithToken(h.deleteShow)).Methods("DELETE")
 
 	r.HandleFunc("/auth", h.authUser).Methods("POST")
-	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST") //admin only, open to anyone in the future
+	//TODO add admin check, should just be middleware
+	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST")
 	r.HandleFunc("/auth/reset", h.authReset).Methods("POST")
 
 	//for these user should only be able to do these to themselves...
@@ -248,10 +248,8 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
-	//unpack verification code
-	//i think easier to just throw code into verification object
-	//TODO think of a better way to do this
-	//for now i think its ok to not make middleware
+
+	//TODO see if i can do the code verification better
 	err = json.Unmarshal(reqBody, &verification)
 	if err != nil {
 		code = 400
@@ -259,7 +257,6 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	//validate the user actually has validity to create
 	err = h.service.ValidateAuthUser(user.Email, verification.Code)
 	if err != nil {
 		code = 400
@@ -268,6 +265,8 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	//TODO set all users up as promoters / possibly expand in future
+	user.Usertype = "promoter"
 	u, err := h.service.CreateUser(user)
 	if err != nil {
 		code = 500
@@ -275,7 +274,6 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	//delete the validation object
 	err = h.service.DeleteAuthObject(user.Email)
 	if err != nil {
 		code = 500
@@ -293,22 +291,6 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 	var user models.User
 	var verification models.Verification
 
-	//userid needs to come from the context instead of being exposed on the url
-	/*userID := r.Context().Value(utils.UserIDKey{}).(string)
-	if userID == "" {
-		code = 400
-		fmt.Println("no user id provided")
-		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
-		return
-	}*/
-	//userId := mux.Vars(r)["id"]
-	//TODO perform input validation
-	/*if userId == "" {
-		code = 400
-		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
-		return
-	}*/
-
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		code = 400
@@ -321,10 +303,8 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 		utils.RespondWithError(w, code, err.Error())
 		return
 	}
-	//unpack verification code
-	//i think easier to just throw code into verification object
-	//TODO think of a better way to do this
-	//for now i think its ok to not make middleware
+
+	//TODO see if i can do the code verification better
 	err = json.Unmarshal(reqBody, &verification)
 	if err != nil {
 		code = 400
@@ -332,7 +312,6 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	//validate the user actually has validity to reset
 	err = h.service.ValidateAuthUser(user.Email, verification.Code)
 	if err != nil {
 		code = 400
@@ -348,7 +327,6 @@ func (h *HCShowCalendarServer) resetUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	//delete the validation object
 	err = h.service.DeleteAuthObject(user.Email)
 	if err != nil {
 		code = 500
@@ -403,9 +381,28 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 	var err error
 	var v models.Verification
 
-	//should contain an email to setup the auth for
-	//should create the verification object and store in the db
-	//should send the account setup email
+	/*userID := r.Context().Value(utils.UserIDKey{}).(string)
+	if userID == "" {
+		code = 400
+		fmt.Println("no user id provided")
+		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
+		return
+	}*/
+
+	//TODO i think this is the lazy way to do this (even though its not terrible imo), update at some point to better way
+	//maybe middleware function
+	/*uObject, err := h.service.GetUser(userID)
+	if err != nil {
+		code = 400
+		utils.RespondWithError(w, code, err.Error())
+		return
+	}
+	if uObject.Usertype != utils.ADMIN_USER {
+		code = 400
+		fmt.Println("user cannot setup new authentication")
+		utils.RespondWithError(w, code, errors.New("user cannot setup new authentication").Error())
+		return
+	}*/
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -440,7 +437,7 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 		Email: v.Email,
 		Code:  verificationCode,
 	}
-	//should create an email for the particular type and then send
+
 	mailReq := h.emailService.NewMail(from, to, subject, mailType, mailData)
 	err = h.emailService.SendMail(mailReq)
 	if err != nil {
@@ -508,13 +505,10 @@ func (h *HCShowCalendarServer) authReset(w http.ResponseWriter, r *http.Request)
 	utils.RespondWithJSON(w, code, map[string]string{"response": "created"})
 }
 
-// do i need to expand this to search by username?
-// maybe in the future
 func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
 	var code = 200
 	var err error
 
-	//userid come from the context instead of being exposed on the url
 	userID := r.Context().Value(utils.UserIDKey{}).(string)
 	if userID == "" {
 		code = 400
@@ -524,7 +518,6 @@ func (h *HCShowCalendarServer) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.service.GetUser(userID)
-	//determine what type of error and change code and return according error message
 	if err != nil {
 		code = 500
 		utils.RespondWithError(w, code, err.Error())
@@ -543,7 +536,6 @@ func (h *HCShowCalendarServer) getUserShows(w http.ResponseWriter, r *http.Reque
 	var code = 200
 	var err error
 
-	//userid come from the context instead of being exposed on the url
 	userID := r.Context().Value(utils.UserIDKey{}).(string)
 	if userID == "" {
 		code = 400
@@ -582,7 +574,6 @@ func (h *HCShowCalendarServer) updateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	//userid come from the context instead of being exposed on the url
 	userID := r.Context().Value(utils.UserIDKey{}).(string)
 	if userID == "" {
 		code = 400
@@ -606,7 +597,6 @@ func (h *HCShowCalendarServer) deleteUser(w http.ResponseWriter, r *http.Request
 	var code = 200
 	var err error
 
-	//userid come from the context instead of being exposed on the url
 	userID := r.Context().Value(utils.UserIDKey{}).(string)
 	if userID == "" {
 		code = 400
@@ -629,6 +619,6 @@ func (h *HCShowCalendarServer) healthCheck(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	//could ping the db / server here to check true health status
+	//TODO research correct health check implementation
 	io.WriteString(w, `{"alive": true}`)
 }

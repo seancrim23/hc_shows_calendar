@@ -34,3 +34,6 @@ var ErrShowDoesntExist = errors.New("cannot find show")
 // TODO take another look at this, maybe more descriptive?
 var ErrUserDataMalformed = errors.New("user data is malformed")
 var ErrShowDataMalformed = errors.New("show data is malformed")
+
+var ADMIN_USER = "admin"
+var SECRET_USER_KEY = "hc_show_calendar_user_key"

@@ -34,14 +34,10 @@ function ShowFilters({ setShowList, setHasError }) {
         setShowList([]);
     }
 
-    //TODO is query params best way? or does it matter?
-    //TODO do i need to do anything to protect query params?
+    //TODO dont think error setting is the best way i can do it, update when have time
     async function fetchShows(filters) {
-        //state at least will always be included in this request
-        let url = "http://localhost:8080/show?state=" + encodeURIComponent(filters.state) + "&date_range=week";
-        //let url = process.env.HC_CALENDAR_APP_BACK_URL + '/show?state=' + filters.state;
+        let url = process.env.REACT_APP_BACK_URL + '/show?state=' + encodeURIComponent(filters.state) + "&date_range=week";
 
-        //if filters city exists and is not empty...
         if (filters.city && filters.city !== '') {
             url = url + '&city=' + encodeURIComponent(filters.city);
         }
@@ -61,8 +57,6 @@ function ShowFilters({ setShowList, setHasError }) {
             }
         } catch (error) {
             console.log(error)
-            console.log("log out the error here but don't return it to the user")
-            console.log("do i need to add specific code handling?")
             setHasError(true);
         }
     }

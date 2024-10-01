@@ -146,8 +146,6 @@ export async function action({ request, params }) {
     code: data.get('code'),
   };
 
-  //TODO these need to be updated to build the url differently based on env
-  //+ ":" + process.env.REACT_APP_BACK_PORT
   let url = process.env.REACT_APP_BACK_URL + '/user';
 
   const response = await fetch(url, {

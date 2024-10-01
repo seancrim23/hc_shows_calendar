@@ -1,7 +1,6 @@
 package models
 
-// really only need users to store anyone with elevated privileges...
-// TODO what do we want to store for a promoter?
+// TODO figure out what needs to be built out for users
 type User struct {
 	//username will be unique and serve as id
 	Username string `json:"username" firestore:"username"`
@@ -9,4 +8,5 @@ type User struct {
 	Email string `json:"email" firestore:"email"`
 	//plain text should never exist in a DB
 	Password string `json:"password" firestore:"password,omitempty"`
+	Usertype string `json:"usertype" firestore:"usertype"`
 }
