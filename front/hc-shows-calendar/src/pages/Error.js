@@ -3,6 +3,10 @@ import PageContent from "../components/PageContent";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import hc_shows_calendar_bg from "../assets/hc_shows_calendar_yot_small.png";
+import { Link, Typography } from "@mui/material";
 
 //TODO add more error handling / clean this up
 //i think the error parsing needs to get fixed bc it doesnt like JSON parse error.data...
@@ -35,22 +39,50 @@ function ErrorPage() {
         message = "could not find resource or page";
     }
 
+    /*
     return (
-        <Grid
-            container
-            alignItems="center"
-            justifyContent="center"
-            spacing={0}
-            direction="column"
-            sx={{ background: '#636363' }}>
-            <Header loggedIn={loggedIn} />
-            <PageContent title={title}>
-                <p>{message}</p>
-                <p>Back to <a href="/">HOME</a></p>
-            </PageContent>
-            <Footer />
-        </Grid>
+        <Box sx={{ backgroundImage: `url(${hc_shows_calendar_bg})`, display:'flex', flexDirection:'column', minHeight:'100vh'}}>
+            <Container sx={{flexGrow:1}} maxWidth="lg">
+                <Header loggedIn={loggedIn} />
+                <Grid
+                    container
+                    alignItems="center"
+                    justifyContent="flex-start"
+                    spacing={0}
+                    direction="column"
+                    display="flex">
+                    <Outlet />
+                </Grid>
+                <Footer />
+            </Container>
+        </Box>
+    );
+    */
 
+    return (
+        <Box sx={{ backgroundImage: `url(${hc_shows_calendar_bg})`, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Container sx={{ flexGrow: 1 }} maxWidth="lg">
+                <Header loggedIn={loggedIn} />
+                <Grid
+                    container
+                    alignItems="center"
+                    backgroundColor='#f5f5f5'
+                    justifyContent="flex-start"
+                    borderBottom='1px solid rgba(0, 0, 0, 0.12)'
+                    paddingLeft='20px'
+                    paddingRight='20px'
+                    paddingBottom='10px'
+                    spacing={0}
+                    direction="column"
+                    display="flex">
+                    <PageContent title={title}>
+                        <Typography variant='subtitle1'>{message}</Typography>
+                        <Typography>Back to <Link href="/">HOME</Link></Typography>
+                    </PageContent>
+                </Grid>
+                <Footer />
+            </Container>
+        </Box>
     );
 }
 

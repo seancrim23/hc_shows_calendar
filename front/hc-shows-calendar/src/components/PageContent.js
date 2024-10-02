@@ -1,9 +1,11 @@
+import { Typography } from "@mui/material";
+
 function PageContent({ title, children }) {
     return (
-      <div>
-        <h1>{title}</h1>
+      <>
+        <Typography variant="h2">{title}</Typography>
         {children}
-      </div>
+      </>
     );
   }
   

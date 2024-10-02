@@ -41,12 +41,10 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	r.HandleFunc("/show/{id}", utils.WithToken(h.deleteShow)).Methods("DELETE")
 
 	r.HandleFunc("/auth", h.authUser).Methods("POST")
-	//TODO add admin check, should just be middleware
-	r.HandleFunc("/auth/setup", h.authSetup).Methods("POST")
+	//TODO add admin middleware
+	r.HandleFunc("/auth/setup", utils.WithToken(h.authSetup)).Methods("POST")
 	r.HandleFunc("/auth/reset", h.authReset).Methods("POST")
 
-	//for these user should only be able to do these to themselves...
-	//"WithVerification" ??? should only be able to create user if verification exists for the user
 	r.HandleFunc("/user", h.createUser).Methods("POST")              //token
 	r.HandleFunc("/user", utils.WithToken(h.getUser)).Methods("GET") //token
 	r.HandleFunc("/user/shows", utils.WithToken(h.getUserShows)).Methods("GET")
@@ -265,8 +263,9 @@ func (h *HCShowCalendarServer) createUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	//TODO set all users up as promoters / possibly expand in future
+	//TODO set all users with accounts up as promoters / possibly expand in future
 	user.Usertype = "promoter"
+
 	u, err := h.service.CreateUser(user)
 	if err != nil {
 		code = 500
@@ -381,17 +380,17 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 	var err error
 	var v models.Verification
 
-	/*userID := r.Context().Value(utils.UserIDKey{}).(string)
+	userID := r.Context().Value(utils.UserIDKey{}).(string)
 	if userID == "" {
 		code = 400
 		fmt.Println("no user id provided")
 		utils.RespondWithError(w, code, errors.New("no id passed to request").Error())
 		return
-	}*/
+	}
 
 	//TODO i think this is the lazy way to do this (even though its not terrible imo), update at some point to better way
 	//maybe middleware function
-	/*uObject, err := h.service.GetUser(userID)
+	uObject, err := h.service.GetUser(userID)
 	if err != nil {
 		code = 400
 		utils.RespondWithError(w, code, err.Error())
@@ -402,7 +401,7 @@ func (h *HCShowCalendarServer) authSetup(w http.ResponseWriter, r *http.Request)
 		fmt.Println("user cannot setup new authentication")
 		utils.RespondWithError(w, code, errors.New("user cannot setup new authentication").Error())
 		return
-	}*/
+	}
 
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {

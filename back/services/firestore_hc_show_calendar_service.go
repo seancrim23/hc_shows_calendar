@@ -198,7 +198,7 @@ func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User,
 func (f *FirestoreHCShowCalendarService) GetUserShows(username string) (*[]models.Show, error) {
 	var shows []models.Show
 	fmt.Println("getting shows promoted by id " + username)
-	iter := f.database.Collection(utils.SHOW_COLLECTION).Where("promoter", "==", username).Documents(f.ctx)
+	iter := f.database.Collection(utils.SHOW_COLLECTION).Where("promoter", "==", username).OrderBy("date", firestore.Asc).Documents(f.ctx)
 	for {
 		s := models.Show{}
 		doc, err := iter.Next()
@@ -206,6 +206,7 @@ func (f *FirestoreHCShowCalendarService) GetUserShows(username string) (*[]model
 			break
 		}
 		if err != nil {
+			fmt.Println(err)
 			fmt.Println("error iterating over results")
 			return nil, err
 		}
@@ -228,7 +229,7 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 		return nil, err
 	}
 
-	u := models.User{Username: user.Username, Password: string(hashedPassword), Email: user.Email}
+	u := models.User{Username: user.Username, Password: string(hashedPassword), Email: user.Email, Usertype: user.Usertype}
 	_, err = f.database.Collection(utils.USER_COLLECTION).Doc(u.Username).Set(f.ctx, u)
 	if err != nil {
 		fmt.Println("some sort of error building the add query from firestore")

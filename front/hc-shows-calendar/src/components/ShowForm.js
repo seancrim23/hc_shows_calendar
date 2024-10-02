@@ -9,6 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import * as Yup from 'yup';
@@ -126,7 +127,9 @@ function ShowForm({ method, show }) {
                                     sx={{ width: '100%' }}
                                 >
                                     {
-                                        Object.keys(statesMapping).map((key, i) => (
+                                        Object.keys(statesMapping)
+                                        .sort((a, b) => a.localeCompare(b))
+                                        .map((key, i) => (
                                             <MenuItem key={i} value={key}>{key}</MenuItem>
                                         ))
                                     }
@@ -205,10 +208,15 @@ export default ShowForm;
 export async function action({ request, params }) {
     const method = request.method;
     const data = await request.formData();
+    dayjs.extend(customParseFormat);
+
+    var showDate = dayjs(Object.fromEntries(data).date);
+    var showTime = dayjs(Object.fromEntries(data).time);
+
+    var showDateWithTime = showDate.set('hour', showTime.hour()).set('minute', showTime.minute()).set('second', showTime.second());
 
     const showData = {
-        date: dayjs(Object.fromEntries(data).date),
-        time: dayjs(Object.fromEntries(data).time),
+        date: showDateWithTime,
         venue: Object.fromEntries(data).venue,
         address: Object.fromEntries(data).address,
         state: Object.fromEntries(data).state,
