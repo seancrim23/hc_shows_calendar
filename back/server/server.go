@@ -55,7 +55,6 @@ func NewHCShowCalendarServer(service services.HCShowCalendarService, emailServic
 	//UPDATE RESET USER TO TAKE USER ID FROM CONTEXT AND USE TO UPDATE PASSWORD
 	r.HandleFunc("/user/reset", h.resetUser).Methods("PUT")
 
-	fmt.Println(os.Getenv(utils.ALLOWED_ORIGINS))
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{os.Getenv(utils.ALLOWED_ORIGINS)},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},

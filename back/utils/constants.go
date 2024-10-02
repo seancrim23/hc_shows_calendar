@@ -37,3 +37,6 @@ var ErrShowDataMalformed = errors.New("show data is malformed")
 
 var ADMIN_USER = "admin"
 var SECRET_USER_KEY = "hc_show_calendar_user_key"
+
+var GOOGLE_URL = "GOOGLE_URL"
+var TEMPLATE_BUCKET = "TEMPLATE_BUCKET"

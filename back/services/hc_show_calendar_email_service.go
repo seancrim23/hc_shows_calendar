@@ -4,11 +4,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-// interface to provide ability to send email
-// design to allow for possible expansion to sendgrid (or other solution) in future
-// create new email
-// send email
-// what else should i be able to do?
+// TODO expand interface in future
 type HCShowCalendarEmailService interface {
 	CreateMail(mailReq *Mail) (*gomail.Message, error)
 	SendMail(mailReq *Mail) error

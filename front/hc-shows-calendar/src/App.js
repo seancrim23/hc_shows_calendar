@@ -22,7 +22,6 @@ import NewUserPage from './pages/NewUser';
 import ErrorPage from './pages/Error';
 import EmailSetupAuthPage from './pages/EmailSetupAuth';
 
-//TODO add auth loader
 const router = createBrowserRouter([
   {
     path: '/',

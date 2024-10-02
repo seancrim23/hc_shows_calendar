@@ -29,8 +29,6 @@ type FirestoreHCShowCalendarService struct {
 func NewFirestoreHCShowCalendarService() (*FirestoreHCShowCalendarService, func(), error) {
 	ctx := context.Background()
 
-	fmt.Println(os.Getenv(utils.FIRESTORE_EMULATOR_HOST))
-	fmt.Println(os.Getenv(utils.GCP_PROJECT_ID))
 	if value := os.Getenv(utils.FIRESTORE_EMULATOR_HOST); value != "" {
 		fmt.Println("using firestore emulator: " + value)
 	}
@@ -107,7 +105,6 @@ func (f *FirestoreHCShowCalendarService) GetShows(showQueryFilters map[string]st
 }
 
 func (f *FirestoreHCShowCalendarService) GetShow(id string) (*models.Show, error) {
-	fmt.Println("getting show with id " + id)
 	dsnap, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(id).Get(f.ctx)
 	if err != nil {
 		fmt.Println("error getting show")
@@ -139,7 +136,6 @@ func (f *FirestoreHCShowCalendarService) CreateShow(show models.Show, username s
 }
 
 func (f *FirestoreHCShowCalendarService) UpdateShow(id string, show models.Show) (*models.Show, error) {
-	fmt.Println("updating values for show " + id)
 	showFirestoreUpdateData := buildShowFirestoreUpdateData(show)
 	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(id).Update(f.ctx, showFirestoreUpdateData)
 	if err != nil {
@@ -167,7 +163,6 @@ func buildShowFirestoreUpdateData(show models.Show) []firestore.Update {
 }
 
 func (f *FirestoreHCShowCalendarService) DeleteShow(id string) error {
-	fmt.Println("deleting show with id... " + id)
 	_, err := f.database.Collection(utils.SHOW_COLLECTION).Doc(id).Delete(f.ctx)
 	if err != nil {
 		fmt.Println("error deleting show")
@@ -178,7 +173,6 @@ func (f *FirestoreHCShowCalendarService) DeleteShow(id string) error {
 }
 
 func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User, error) {
-	fmt.Println("getting user with id " + username)
 	dsnap, err := f.database.Collection(utils.USER_COLLECTION).Doc(username).Get(f.ctx)
 	if err != nil {
 		fmt.Println("error getting user")
@@ -197,7 +191,6 @@ func (f *FirestoreHCShowCalendarService) GetUser(username string) (*models.User,
 
 func (f *FirestoreHCShowCalendarService) GetUserShows(username string) (*[]models.Show, error) {
 	var shows []models.Show
-	fmt.Println("getting shows promoted by id " + username)
 	iter := f.database.Collection(utils.SHOW_COLLECTION).Where("promoter", "==", username).OrderBy("date", firestore.Asc).Documents(f.ctx)
 	for {
 		s := models.Show{}
@@ -240,7 +233,6 @@ func (f *FirestoreHCShowCalendarService) CreateUser(user models.User) (*models.U
 }
 
 func (f *FirestoreHCShowCalendarService) UpdateUser(username string, user models.User) (*models.User, error) {
-	fmt.Println("updating values for user " + username)
 	userFirestoreUpdateData := buildUserFirestoreUpdateData(user)
 	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(username).Update(f.ctx, userFirestoreUpdateData)
 	if err != nil {
@@ -308,7 +300,6 @@ func (f *FirestoreHCShowCalendarService) ResetPassword(email string, password st
 }
 
 func (f *FirestoreHCShowCalendarService) DeleteUser(username string) error {
-	fmt.Println("deleting user with id... " + username)
 	_, err := f.database.Collection(utils.USER_COLLECTION).Doc(username).Delete(f.ctx)
 	if err != nil {
 		fmt.Println("error deleting user")

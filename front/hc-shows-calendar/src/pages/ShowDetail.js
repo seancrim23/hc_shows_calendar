@@ -21,7 +21,6 @@ function ShowDetailPage() {
 export default ShowDetailPage;
 
 async function loadShow(id) {
-    //implement to hit db to load show by id
     const response = await fetch(process.env.REACT_APP_BACK_URL + "/show/" + id);
 
     if (!response.ok) {

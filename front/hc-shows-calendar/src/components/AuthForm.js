@@ -18,7 +18,6 @@ function AuthForm({ method }) {
 
   const validateSchema = Yup.object().shape({
     username: Yup.string().required(REQUIRED_FIELD),
-    //TODO expand password validation
     password: Yup.string().required(REQUIRED_FIELD),
   })
 

@@ -60,10 +60,7 @@ function UserShowListPage() {
 
 export default UserShowListPage;
 
-//loader to grab all of the shows that have been created by a user
 async function loadUserShowList() {
-    //TODO these need to be updated to build the url differently based on env
-    //+ ":" + process.env.REACT_APP_BACK_PORT
     const token = getAuthToken();
     const url = process.env.REACT_APP_BACK_URL + "/user/shows"
     const response = await fetch(url, {

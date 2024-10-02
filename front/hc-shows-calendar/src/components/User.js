@@ -7,12 +7,12 @@ import Box from '@mui/material/Box';
 
 function User({ user, isPromoter }) {
 
-    //if there isn't a token, redirect
     if (!isPromoter) {
         redirect('/');
     }
 
     //TODO add edit user
+    //TODO build out user profile stuff
     return (
         <>
             <Card sx={{ display: 'flex' }}>

@@ -10,7 +10,7 @@ function Show({ show, canEdit }) {
     const submit = useSubmit();
 
     function startDeleteHandler(id) {
-        console.log(id)
+        //TODO build out modal or something
         const proceed = window.confirm('Are you sure?');
 
         if (proceed) {

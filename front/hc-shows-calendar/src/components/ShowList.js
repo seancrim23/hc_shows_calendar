@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
 function ShowList({ shows, noShowsMessage, isPromoter }) {
-    //protect from null case
+
     if (shows === null) {
         shows = [];
     }

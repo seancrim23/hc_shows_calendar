@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 
+//TODO make footer look more cool
 function Footer() {
     return (
         <Box

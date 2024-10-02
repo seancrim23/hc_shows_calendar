@@ -89,6 +89,6 @@ func buildEmailBody(templatePath string, mailData MailData) (string, error) {
 
 // TODO refactor templates to come from google cloud file store
 var mailTemplateLocations = map[MailType]string{
-	MailConfirmation: "C:/development/hc_shows_calendar/back/templates/confirm_mail.html",
-	PassReset:        "C:/development/hc_shows_calendar/back/templates/password_reset.html",
+	MailConfirmation: os.Getenv(utils.GOOGLE_URL) + os.Getenv(utils.TEMPLATE_BUCKET) + "/confirm_mail.html",
+	PassReset:        os.Getenv(utils.GOOGLE_URL) + os.Getenv(utils.TEMPLATE_BUCKET) + "/password_reset.html",
 }

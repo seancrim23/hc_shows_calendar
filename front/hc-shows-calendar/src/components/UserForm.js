@@ -1,5 +1,3 @@
-//form to create a user, just has email username password and verification code for now
-//probably can be built out in the future with more user stuff thats not very important right now
 import { useActionData, useNavigation, json, redirect, useSubmit } from "react-router-dom";
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -19,7 +17,6 @@ function UserForm() {
   const validateSchema = Yup.object().shape({
     email: Yup.string().required(REQUIRED_FIELD),
     username: Yup.string().required(REQUIRED_FIELD),
-    //TODO expand password validation
     password: Yup.string().required(REQUIRED_FIELD)
       .min(8, "Must be 8 characters or more")
       .matches(/[a-z]+/, "One lowercase character")
@@ -164,6 +161,5 @@ export async function action({ request, params }) {
     throw json({ message: 'User auth creation failed failed!' }, { status: 500 });
   }
 
-  //redirect to user login
   return redirect('/');
 }

@@ -35,7 +35,7 @@ func AccessSecretVersion(keyName string) (string, error) {
 	crc32c := crc32.MakeTable(crc32.Castagnoli)
 	checksum := int64(crc32.Checksum(result.Payload.Data, crc32c))
 	if checksum != *result.Payload.DataCrc32C {
-		return "", fmt.Errorf("Data corruption detected.")
+		return "", fmt.Errorf("data corruption detected.")
 	}
 
 	return string(result.Payload.Data), nil
