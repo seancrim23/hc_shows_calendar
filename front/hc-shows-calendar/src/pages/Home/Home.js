@@ -37,7 +37,7 @@ function HomePage() {
                 overflow:'hidden',
                 overflowY:'scroll'
             }}>
-                {hasError ? <Grid item xs={12}><Typography variant="h6">Error retrieving shows, please try filtering again (idk if it still doesnt work contact me?)</Typography></Grid> :
+                {hasError ? <Grid item xs={12}><Typography variant="h6">Error retrieving shows, please try filtering again. (Contact me if error continues)</Typography></Grid> :
                     <ShowList shows={showList} hasError={hasError} isPromoter={false} noShowsMessage={"No shows at the moment! Choose filters to find shows near you!"} />
                 }
             </Grid>
